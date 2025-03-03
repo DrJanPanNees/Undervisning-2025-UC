@@ -61,25 +61,119 @@
 - **Mål:** Introduktion til at bygge Docker-images
 - **Relevans:** Lær at containerisere applikationer
 
-**Instruktioner:**
 
-1. Opret en ny mappe og skab en `Dockerfile`:
-   ```dockerfile
-   FROM alpine
-   RUN apk add --update nodejs npm
-   COPY . /src
-   WORKDIR /src
-   RUN npm install
-   CMD ["node", "app.js"]
-   ```
-2. Byg Docker-imagen:
-   ```bash
-   docker build -t my-node-app .
-   ```
-3. Bekræft, at imagen er oprettet:
-   ```bash
-   docker images
-   ```
+# Docker Øvelse: Simpel Node.js Webserver
+
+## **Formål**
+Denne øvelse viser, hvordan du kører en simpel Node.js-webserver i en Docker-container **uden at installere Node.js** på din host-computer.
+
+## **Forudsætninger**
+- **Kun Docker!** Ingen npm eller Node.js kræves på hosten.
+
+---
+
+## **1. Opret en ny projektmappe**
+Åbn terminalen og kør:
+```sh
+mkdir simple-node-app && cd simple-node-app
+```
+
+---
+
+## **2. Opret `server.js`**
+Kør:
+```sh
+touch server.js
+```
+Eller opret filen manuelt og indsæt dette:
+
+```javascript
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Hello from Docker!\n');
+});
+
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+---
+
+## **3. Opret en `Dockerfile`**
+Kør:
+```sh
+touch Dockerfile
+```
+Indsæt følgende i `Dockerfile`:
+
+```dockerfile
+# Brug en letvægts Node.js-image
+FROM node:18-alpine
+
+# Sæt arbejdsmappe
+WORKDIR /app
+
+# Kopiér server.js til containeren
+COPY server.js .
+
+# Start serveren
+CMD ["node", "server.js"]
+```
+
+---
+
+## **4. Byg og kør containeren**
+Byg containeren:
+```sh
+docker build -t simple-node-app .
+```
+
+Kør containeren:
+```sh
+docker run -p 3000:3000 simple-node-app
+```
+
+---
+
+## **5. Test i browseren**
+Åbn din browser og gå til:
+```
+http://localhost:3000
+```
+Du bør se:
+```
+Hello from Docker!
+```
+
+---
+
+## **Hvorfor denne version?**
+✅ **Ingen afhængigheder på hosten** – Alt kører i Docker.  
+✅ **Ingen database eller eksterne services** – Kun en simpel webserver.  
+✅ **Let at starte og stoppe** – Alt kan bygges og køres med Docker alene.
+
+---
+
+## **6. Stop og ryd op**
+For at stoppe containeren:
+```sh
+CTRL + C
+```
+
+For at slette containeren:
+```sh
+docker rm $(docker ps -a -q) -f
+```
+For at slette Docker-imagen:
+```sh
+docker rmi simple-node-app -f
+```
+
+God fornøjelse med Docker! 🚀
 
 ---
 
