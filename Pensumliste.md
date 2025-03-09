@@ -10,6 +10,7 @@ Forståelse af Docker i produktion sikrer en effektiv pipeline for deployment, l
 - Logging & debugging af containere
 - Hands-on: Implementering af et professionelt udviklingsmiljø
 - [WatchTower til automatiseret opdatering af containere](https://hub.docker.com/r/v2tec/watchtower)
+- **Best practice for Docker i produktion:** [YouTube-video](https://www.youtube.com/watch?v=8vXoMqWgbQQ)
 
 ---
 
@@ -25,6 +26,7 @@ Containerteknologi er grundlaget for moderne softwareudvikling, især inden for 
 - Hands-on: Kør en simpel webserver i en container
 - **Docker Netværking:** [YouTube-video](https://www.youtube.com/watch?v=bKFMS5C4CG0&pp=ygUQbmFuYSBkb2NrZXIgLm5ldA%3D%3D)
 - **Docker intro:** [YouTube-video](https://www.youtube.com/watch?v=8vXoMqWgbQQ&pp=ygUQbmFuYSBkb2NrZXIgLm5ldA%3D%3D)
+- **Docker Compose:** [YouTube-video](https://www.youtube.com/watch?v=SXwC9fSwct8)
 
 **Supplerende litteratur:**  
 - [YouTube-video](https://www.youtube.com/watch?v=SXwC9fSwct8&pp=ygUQbmFuYSBkb2NrZXIgLm5ldA%3D%3D) *(I behøver ikke se det hele fra start til slut, gerne skimte igennem og vælge det der er vigtigst for dig).*
