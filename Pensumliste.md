@@ -23,6 +23,11 @@ Containerteknologi er grundlaget for moderne softwareudvikling, især inden for 
 - Installation & første container
 - Docker CLI & Docker Hub
 - Hands-on: Kør en simpel webserver i en container
+- **Docker Netværking:** [YouTube-video](https://www.youtube.com/watch?v=bKFMS5C4CG0&pp=ygUQbmFuYSBkb2NrZXIgLm5ldA%3D%3D)
+- **Docker intro:** [YouTube-video](https://www.youtube.com/watch?v=8vXoMqWgbQQ&pp=ygUQbmFuYSBkb2NrZXIgLm5ldA%3D%3D)
+
+**Supplerende litteratur:**  
+- [YouTube-video](https://www.youtube.com/watch?v=SXwC9fSwct8&pp=ygUQbmFuYSBkb2NrZXIgLm5ldA%3D%3D) *(I behøver ikke se det hele fra start til slut, gerne skimte igennem og vælge det der er vigtigst for dig).*
 
 ---
 
@@ -56,4 +61,3 @@ Netværksforståelse er fundamentet for distribuerede systemer, internetsikkerhe
 ---
 
 Dette pensum dækker de vigtigste koncepter og giver en struktureret tilgang til at lære netværk, virtualisering og containerisering.
-
