@@ -97,7 +97,11 @@
 
 ## Hands-on – Øvelser
 
-Her er nogle praktiske øvelser, hvor du kan teste dine sikkerhedsevner:
+### Praktiske Øvelser: Test dine sikkerhedsevner
+
+For at få hands-on erfaring med OWASP Juice Shop skal I arbejde i grupper. Hver gruppe vælger én af nedenstående øvelser og forbereder en kort præsentation af resultaterne til næste undervisningsgang. Det er tilladt at bruge YouTube og andre ressourcer på nettet for at finde løsninger og baggrundsviden.
+
+**Vigtigt:** Øvelse 9 og 10 er mere udfordrende og forbeholdt de studerende, der ønsker en ekstra udfordring.
 
 1. **SQL Injection** (Manipulation af databaser gennem inputfelter)
    - Gå til login-siden.
