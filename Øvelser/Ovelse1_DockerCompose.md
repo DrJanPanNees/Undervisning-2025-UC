@@ -26,17 +26,9 @@ kundesystem/
 
 ## 🔧 Trin-for-trin guide
 
-### 🔹 1. Opret projektmappen
-
-```bash
-mkdir -p kundesystem/db/init
-mkdir -p kundesystem/nginx
-cd kundesystem
-```
-
 ---
 
-### 🔹 2. Opret `docker-compose.yml`
+### 🔹 Opret `docker-compose.yml`
 
 I roden af projektet (mappen `kundesystem`), opret filen `docker-compose.yml`:
 
@@ -81,7 +73,7 @@ services:
 
 ---
 
-### 🔹 3. Tilføj SQL-init script
+### 🔹 Tilføj SQL-init script
 
 Opret og rediger filen `kundesystem/db/init/init.sql`:
 
@@ -101,7 +93,7 @@ CREATE TABLE IF NOT EXISTS customers (
 
 ---
 
-### 🔹 4. Tilføj tom NGINX config
+### 🔹 Tilføj tom NGINX config
 
 Opret og rediger filen `kundesystem/nginx/default.conf`:
 
@@ -121,7 +113,7 @@ server {
 
 ---
 
-### 🔹 5. Start systemet
+### 🔹 Start systemet
 
 I roden af `kundesystem/`:
 
@@ -144,8 +136,20 @@ Tjek at det virker:
 
 | Delmål                                      | Status  |
 |--------------------------------------------|---------|
-| Opret projektstruktur                      | ✅       |
 | Lav `docker-compose.yml`                   | ✅       |
 | Initialiser database med SQL-script        | ✅       |
 | Tilføj tom NGINX-konfiguration             | ✅       |
 | Start system og bekræft funktionalitet     | ✅       |
+
+---
+
+## 🧩 Hvad skal der ske i næste øvelse?
+
+Du skal nu oprette en C#-konsolapplikation, der kan:
+
+- Tilføje kunder til databasen
+- Hente og vise alle kunder
+- Slette en kunde
+
+Denne applikation skal du også dockerisere, så den kan tilgå MySQL-containeren fra Compose-netværket. Det bliver Øvelse 2.
+
