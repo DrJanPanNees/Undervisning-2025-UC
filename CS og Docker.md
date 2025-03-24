@@ -142,7 +142,7 @@ volumes:
 Byg og start hele systemet med:
 
 ```sh
-docker-compose up --build
+docker compose run --rm app
 ```
 
 Herefter kan du indtaste en besked, som gemmes i MySQL-databasen, og se tidligere gemte beskeder.
