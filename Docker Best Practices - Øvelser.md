@@ -160,7 +160,7 @@ Brug Docker Scan til at identificere sårbarheder i dit image.
 docker build -t myapp .
 
 # Scan image for sårbarheder
-docker scan myapp
+docker scout myapp
 ```
 
 **Diskussion:** Hvordan kan du løse de identificerede sårbarheder?
