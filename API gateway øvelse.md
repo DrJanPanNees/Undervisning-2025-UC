@@ -10,8 +10,9 @@ I denne øvelse skal du opbygge et API Gateway-miljø med [YARP](https://github.
 ---
 
 ## Del 1: Projektstruktur
+**📁 Formål:** Få overblik over fil- og mappeopbygning i projektet
 
-```text
+```
 /YarpDockerDemo
 ├── Gateway
 │   ├── Program.cs
@@ -31,6 +32,7 @@ I denne øvelse skal du opbygge et API Gateway-miljø med [YARP](https://github.
 ---
 
 ## Del 2: Opret Kunde- og Produktservices (NGINX)
+**🌐 Formål:** Skabe to enkle webservices med NGINX som simulerer mikrotjenester
 
 ### `KundeService/index.html`
 ```html
@@ -61,6 +63,7 @@ COPY default.conf /etc/nginx/conf.d/default.conf
 ---
 
 ## Del 3: Opret Gateway med YARP
+**🔁 Formål:** Byg en API Gateway som proxy mellem klient og tjenester, og tilføj simpel token-baseret sikkerhed
 
 ### `Gateway/Program.cs`
 ```csharp
@@ -69,6 +72,7 @@ using Yarp.ReverseProxy;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Tilføj JWT-baseret autentificering med et simpelt token-tjek
 builder.Services.AddAuthentication("MyScheme")
     .AddJwtBearer("MyScheme", options =>
     {
@@ -76,9 +80,11 @@ builder.Services.AddAuthentication("MyScheme")
         {
             OnMessageReceived = context =>
             {
+                // Læs Authorization-headeren og valider token manuelt
                 var token = context.Request.Headers["Authorization"];
                 if (token == "Bearer demo-token")
                 {
+                    // Hvis token er korrekt, oprettes en simpel bruger-identitet
                     context.Principal = new System.Security.Claims.ClaimsPrincipal(
                         new System.Security.Claims.ClaimsIdentity("MyScheme")
                     );
@@ -89,15 +95,23 @@ builder.Services.AddAuthentication("MyScheme")
         };
     });
 
+// Tilføj autorisationstjeneste
 builder.Services.AddAuthorization();
+
+// Indlæs YARP-konfigurationen fra appsettings.json
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
+// Brug autentificering og autorisation før routing
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Brug reverse proxy som default-route og kræv autorisation
 app.MapReverseProxy().RequireAuthorization();
+
+// Start applikationen og lyt på port 80
 app.Run("http://0.0.0.0:80");
 ```
 
@@ -156,6 +170,7 @@ ENTRYPOINT ["dotnet", "Gateway.dll"]
 ---
 
 ## Del 4: Docker Compose
+**📦 Formål:** Samle alle services i én konfiguration og orkestrér dem med Docker Compose
 
 ### `docker-compose.yml`
 ```yaml
@@ -186,6 +201,7 @@ services:
 ---
 
 ## Del 5: Test systemet
+**✅ Formål:** Bekræft at gatewayen videresender trafik korrekt og kræver token
 
 Kør det hele:
 ```bash
@@ -201,10 +217,41 @@ curl -H "Authorization: Bearer demo-token" http://localhost:5000/produkt
 ---
 
 ## Bonus
+**💡 Udvidelse:**
 - Tilføj Swagger UI til services
 - Udskift static HTML med backend-API'er
 - Deploy i Kubernetes som øvelse
 
 ---
 
+## 🛠️ Fejlsøgning og Førstehjælp
+
+Her er nogle typiske fejl og hvad du kan gøre ved dem:
+
+### 🧩 Gateway starter ikke
+- **Tjek at du har en `Gateway.csproj`** i `Gateway/` mappen.
+  - Hvis ikke: kør `dotnet new web -n Gateway` for at oprette én.
+- Sørg for at du har Docker og .NET SDK installeret korrekt.
+
+### 🔐 Fejl 401 Unauthorized
+- Husk at sende `Authorization` header med din request:
+  ```bash
+  curl -H "Authorization: Bearer demo-token" http://localhost:5000/kunde
+  ```
+- Token skal være nøjagtigt `demo-token` (case-sensitive).
+
+### 🌐 Gateway kan ikke nå services
+- Tjek at service-navne i `appsettings.json` matcher dem i `docker-compose.yml` (`kunde`, `produkt`).
+- Prøv at pinge containerne fra gateway-containere med fx `docker exec -it gateway ping kunde`
+
+### ⚓ Port allerede i brug
+- Tjek at portene `5000`, `6001` og `6002` ikke bruges af andre programmer.
+- Skift dem i `docker-compose.yml`, hvis nødvendigt.
+
+### 🐋 Ændringer slår ikke igennem
+- Kør `docker compose down` efterfulgt af `docker compose up --build` for at rydde cache og genstarte alt korrekt.
+
+---
+
+Held og lykke – og spørg endelig din underviser, hvis du sidder fast!
 
