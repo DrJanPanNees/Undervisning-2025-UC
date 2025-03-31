@@ -157,13 +157,19 @@ app.Run("http://0.0.0.0:80");
         "ClusterId": "kunde-cluster",
         "Match": {
           "Path": "/kunde/{**catch-all}"
-        }
+        },
+        "Transforms": [
+          { "PathRemovePrefix": "/kunde" }
+        ]
       },
       "produkt": {
         "ClusterId": "produkt-cluster",
         "Match": {
           "Path": "/produkt/{**catch-all}"
-        }
+        },
+        "Transforms": [
+          { "PathRemovePrefix": "/produkt" }
+        ]
       }
     },
     "Clusters": {
