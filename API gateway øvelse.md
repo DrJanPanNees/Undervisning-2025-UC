@@ -207,6 +207,4 @@ curl -H "Authorization: Bearer demo-token" http://localhost:5000/produkt
 
 ---
 
-## Klar til undervisning 💡
-Du kan nu bruge denne øvelse i din undervisning om API gateways. Den illustrerer både routing, sikkerhed og isolation via containere.
 
