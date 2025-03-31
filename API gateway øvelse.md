@@ -216,6 +216,41 @@ curl -H "Authorization: Bearer demo-token" http://localhost:5000/produkt
 
 ---
 
+## Del 6: Load Balancing & Security Policies
+**🛡️ Formål:** Undersøg hvordan YARP understøtter forskellige load balancing-strategier og sikkerhedspolitikker
+
+### Load balancing via konfiguration
+Tilføj flere destinations for at simulere load balancing:
+```json
+"Clusters": {
+  "produkt-cluster": {
+    "LoadBalancingPolicy": "RoundRobin",
+    "Destinations": {
+      "nginx1": { "Address": "http://produkt:80/" },
+      "nginx2": { "Address": "http://produkt:80/" }
+    }
+  }
+}
+```
+> Test med mange gentagne requests og observer hvordan trafikken fordeles.
+
+### Sikkerhedspolitikker via autorisation
+Tilføj en simpel autorisationspolitik:
+```csharp
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("KunKundeAdgang", policy =>
+        policy.RequireClaim("role", "kunde"));
+});
+```
+Og påfør den på proxyen:
+```csharp
+app.MapReverseProxy().RequireAuthorization("KunKundeAdgang");
+```
+> Dette kræver at du selv håndterer claims i JWT-token – uden for denne demo.
+
+---
+
 ## Bonus
 **💡 Udvidelse:**
 - Tilføj Swagger UI til services
@@ -253,5 +288,5 @@ Her er nogle typiske fejl og hvad du kan gøre ved dem:
 
 ---
 
-Held og lykke – og spørg endelig din underviser, hvis du sidder fast!
+Held og lykke – og spørg endelig mig eller en makker, hvis du sidder fast!
 
