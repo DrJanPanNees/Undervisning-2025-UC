@@ -64,6 +64,37 @@ Ved endt øvelse vil deltageren kunne:
   curl -H "Authorization: Bearer demo-token" http://localhost:8000/kunde
   ```
 
+## Opsætning fra terminal (Ubuntu)
+
+1. **Opret projektmappe:**
+```bash
+mkdir MicroserviceDemo
+cd MicroserviceDemo
+```
+
+2. **Opret `docker-compose.yml` med nano:**
+```bash
+nano docker-compose.yml
+```
+Indsæt her YAML'en som vist senere i dokumentet.
+
+3. **Opret undermapper og filer:**
+```bash
+mkdir Gateway KundeService ProduktService OrdreService
+cd Gateway && nano Program.cs && cd ..
+cd KundeService && nano Program.cs && cd ..
+cd ProduktService && nano Program.cs && cd ..
+cd OrdreService && nano Program.cs && cd ..
+```
+
+Gentag for nødvendige filer som `*.csproj`, `Dockerfile`, `Controllers/*.cs`, `Models/*.cs`, osv.
+
+> Du kan også oprette `index.html`:
+```bash
+mkdir -p Gateway/wwwroot
+nano Gateway/wwwroot/index.html
+```
+
 ## Ændringer i opsætning
 
 1. **Ubuntu som base-setup:**
