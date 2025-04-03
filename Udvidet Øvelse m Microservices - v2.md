@@ -124,6 +124,33 @@ mkdir -p Gateway/wwwroot
 nano Gateway/wwwroot/index.html
 ```
 
+## 🗄️ Hvordan fungerer databaserne i microservices?
+
+I dette setup med `docker-compose` har **hver microservice sin egen databasecontainer**:
+
+| Service         | Database-container | Adgangsforbindelse                     |
+|-----------------|--------------------|----------------------------------------|
+| KundeService    | `mysql_kunde`      | `server=mysql_kunde;...`               |
+| ProduktService  | `mysql_produkt`    | `server=mysql_produkt;...`             |
+| OrdreService    | `mysql_ordre`      | `server=mysql_ordre;...`               |
+
+### 🔐 Hvorfor adskille databaserne?
+- **Isolation:** Services kan ændre schema uden at påvirke andre
+- **Sikkerhed:** Ingen adgang til andres data
+- **Skalering:** Du kan skalere fx ProduktService uden at påvirke resten
+- **Ejerskab:** Hvert team ejer og vedligeholder sin egen datamodel
+
+### 🤝 Hvad hvis én service har brug for en andens data?
+Så skal det ske via **et API-kald**, fx:
+```csharp
+// Inde i OrdreService:
+var kunde = await httpClient.GetFromJsonAsync<Kunde>("http://gateway/kunde/42");
+```
+
+➡️ **Del aldrig databasen direkte** – eksponér data gennem en **offentlig endpoint** i den pågældende service.
+
+---
+
 ## Ændringer i opsætning
 
 1. **Ubuntu som base-setup:**
@@ -499,5 +526,30 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 ```
+
+
+11. **Refleksionsøvelse: Hvad har vi bygget – og hvordan kan det forbedres?**
+
+💬 Overvej og diskuter følgende:
+
+### 🧩 Arkitektur
+- Hvorfor bruger vi en gateway fremfor direkte adgang til services?
+- Hvordan ville det fungere med flere gateways eller load balancing?
+
+### 🔐 Sikkerhed
+- Er vores token-beskyttelse god nok i en rigtig verden?
+- Hvordan kunne vi bruge claims eller scopes til at adskille brugerroller?
+
+### 🗃️ Data og skalering
+- Hvad sker der, hvis én database bliver langsom?
+- Skal hver service nødvendigvis have sin egen database?
+- Hvordan kan vi synkronisere data mellem services?
+
+### 💡 Udvidelser
+- Tilføj en fjerde service (fx LagerService eller BrugerService)
+- Lav frontend med JavaScript der kalder API'en dynamisk
+- Deploy hele systemet til cloud eller Kubernetes
+
+➡️ Afslut med en gruppefremlæggelse eller skriftlig opsamling: *“Hvad ville du gøre anderledes i en produktion?”*
 
 ---
