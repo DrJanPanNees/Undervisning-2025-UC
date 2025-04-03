@@ -1,5 +1,15 @@
 # Opdateret Øvelse: Microservices med Ubuntu + YARP + MySQL
 
+## ✅ Tjekliste: Virker systemet som forventet?
+
+| Testpunkt | Hvad du skal tjekke | Hvordan |
+|-----------|----------------------|--------|
+| 🟢 Gateway kører | Forsiden vises i browseren | Besøg `http://localhost:8000` |
+| 🟢 Link til kunde, produkt og ordre virker | Klik på links – de går via gatewayen | Linkene skal ramme `/kunde`, `/produkt`, `/ordre` |
+| 🟢 API-endpoints virker med token | API'er skal svare korrekt via gateway | Brug `curl` eller Swagger med `Authorization: Bearer demo-token` |
+| 🟢 Data gemmes i databasen | POST til fx `/kunde` og tjek med GET | Brug Swagger eller curl |
+| 🟢 Swagger virker | Kan du se Swagger UI i browseren? | `http://localhost:6001/swagger` osv. |
+
 ## 📁 Formål: Få overblik over mappestruktur og filplacering
 
 ```
@@ -63,6 +73,25 @@ Ved endt øvelse vil deltageren kunne:
   ```bash
   curl -H "Authorization: Bearer demo-token" http://localhost:8000/kunde
   ```
+
+## Installation af Ubuntu Server og forberedelse
+
+Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubuntu Server 22.04 LTS**.
+
+1. **Installer Ubuntu Server**
+   - Download ISO fra [https://ubuntu.com/download/server](https://ubuntu.com/download/server)
+   - Installer med standardindstillinger, evt. tilføj OpenSSH under installationen
+
+2. **Installer nødvendige værktøjer**
+   Log ind på Ubuntu og kør:
+   ```bash
+   sudo apt update
+   sudo apt install docker.io docker-compose -y
+   sudo usermod -aG docker $USER
+   sudo reboot
+   ```
+
+Efter genstart er du klar til at opsætte projektet.
 
 ## Opsætning fra terminal (Ubuntu)
 
