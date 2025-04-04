@@ -130,27 +130,6 @@ Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubu
 
 Efter genstart er du klar til at opsætte projektet.
 
-## Opsætning fra terminal (Ubuntu)
-
-### 🚀 Byg og start projektet
-Når alle filer og mapper er oprettet, kør:
-```bash
-docker-compose build
-docker-compose up
-```
-
-💡 Tip: Brug `-d` til at køre det i baggrunden:
-```bash
-docker-compose up -d
-```
-
-Tjek at alt kører:
-```bash
-docker ps
-```
-
-Gå derefter til `http://localhost:8000` for at teste forsiden via gateway.
-
 
 1. **Opret projektmappe:**
 ```bash
@@ -271,6 +250,27 @@ var kunde = await httpClient.GetFromJsonAsync<Kunde>("http://gateway/kunde/42");
 ➡️ **Del aldrig databasen direkte** – eksponér data gennem en **offentlig endpoint** i den pågældende service.
 
 ---
+
+## Opsætning fra terminal (Ubuntu)
+
+### 🚀 Byg og start projektet
+Når alle filer og mapper er oprettet, kør:
+```bash
+docker-compose build
+docker-compose up
+```
+
+💡 Tip: Brug `-d` til at køre det i baggrunden:
+```bash
+docker-compose up -d
+```
+
+Tjek at alt kører:
+```bash
+docker ps
+```
+
+Gå derefter til `http://localhost:8000` for at teste forsiden via gateway.
 
 ## Ændringer i opsætning
 
