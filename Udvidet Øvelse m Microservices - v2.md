@@ -116,12 +116,16 @@ Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubu
    sudo apt update
    sudo apt install docker.io
    sudo apt install docker-compose
-   ```
-   whoami  # Find dit brugernavn
-sudo usermod -aG docker <dit-brugernavn>  # fx: sudo usermod -aG docker jpas
 
-# 📌 Dette gør, at du kan bruge Docker uden at skrive 'sudo' hver gang.
-sudo reboot
+   # Find dit brugernavn
+   whoami
+
+   # Tilføj brugeren til docker-gruppen (så du ikke skal skrive 'sudo' hver gang)
+   sudo usermod -aG docker <dit-brugernavn>  # fx: sudo usermod -aG docker jpas
+
+   # Genstart systemet, så ændringen træder i kraft
+   sudo reboot
+   ```
    ```
 
 Efter genstart er du klar til at opsætte projektet.
