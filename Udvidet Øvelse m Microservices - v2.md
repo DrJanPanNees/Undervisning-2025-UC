@@ -117,7 +117,7 @@ Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubu
    sudo apt install docker.io
    sudo apt install docker-compose
    ```
-   sudo usermod -aG docker $USER
+   sudo usermod -aG docker <dit-brugernavn>  # fx: sudo usermod -aG docker jpas
    sudo reboot
    ```
 
