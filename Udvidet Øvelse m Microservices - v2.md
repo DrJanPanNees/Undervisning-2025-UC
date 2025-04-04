@@ -39,6 +39,34 @@
 
 ## 🎯 Læringsmål
 
+```
+[Browser eller curl]
+        |
+        v
+  +----------------------+ 
+  |    API Gateway       |  ← Tjekker token, ruter kaldet
+  |----------------------|
+  | // Program.cs        |
+  | app.UseAuthentication();           // Aktiverer JWT-token validering
+  | app.UseAuthorization();            // Sikrer adgang kun gives hvis token er valid
+  | app.MapReverseProxy()              // Registrerer YARP som proxy
+  |     .RequireAuthorization();       // Gør det obligatorisk med godkendelse
+  +----------------------+
+        |
+        v
++------------------+  +---------------------+  +------------------+
+|  KundeService    |  |   ProduktService    |  |   OrdreService   |
+|------------------|  |---------------------|  |------------------|
+| // KundeController.cs | // ProduktController.cs | // OrdreController.cs |
+| [HttpGet]        |  | [HttpPost]          |  | [HttpGet]        |
+| return Ok(...)   |  | _context.Add(...)   |  | ToListAsync()    |
+|------------------|  | SaveChangesAsync()  |  |------------------|
+| // KundeContext.cs | // ProduktContext.cs | // OrdreContext.cs |
+| DbSet<Kunde>     |  | DbSet<Produkt>      |  | DbSet<Ordre>     |
++------------------+  +---------------------+  +------------------+
+```
+
+
 Ved endt øvelse vil deltageren kunne:
 - Bygge og deploye .NET-baserede microservices
 - Anvende YARP som API Gateway med routing og auth
@@ -86,7 +114,9 @@ Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubu
    Log ind på Ubuntu og kør:
    ```bash
    sudo apt update
-   sudo apt install docker.io docker-compose -y
+   sudo apt install docker.io
+   sudo apt install docker-compose
+   ```
    sudo usermod -aG docker $USER
    sudo reboot
    ```
@@ -94,6 +124,26 @@ Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubu
 Efter genstart er du klar til at opsætte projektet.
 
 ## Opsætning fra terminal (Ubuntu)
+
+### 🚀 Byg og start projektet
+Når alle filer og mapper er oprettet, kør:
+```bash
+docker-compose build
+docker-compose up
+```
+
+💡 Tip: Brug `-d` til at køre det i baggrunden:
+```bash
+docker-compose up -d
+```
+
+Tjek at alt kører:
+```bash
+docker ps
+```
+
+Gå derefter til `http://localhost:8000` for at teste forsiden via gateway.
+
 
 1. **Opret projektmappe:**
 ```bash
@@ -105,7 +155,71 @@ cd MicroserviceDemo
 ```bash
 nano docker-compose.yml
 ```
-Indsæt her YAML'en som vist senere i dokumentet.
+Indsæt følgende i filen:
+```yaml
+version: '3.9'
+services:
+  kunde:
+    build: ./KundeService
+    ports: ["6001:80"]
+    environment:
+      - ConnectionStrings__DefaultConnection=server=mysql_kunde;port=3306;database=kundedb;user=user;password=password
+    depends_on:
+      - mysql_kunde
+
+  produkt:
+    build: ./ProduktService
+    ports: ["6002:80"]
+    environment:
+      - ConnectionStrings__DefaultConnection=server=mysql_produkt;port=3306;database=produktdb;user=user;password=password
+    depends_on:
+      - mysql_produkt
+
+  ordre:
+    build: ./OrdreService
+    ports: ["6003:80"]
+    environment:
+      - ConnectionStrings__DefaultConnection=server=mysql_ordre;port=3306;database=ordredb;user=user;password=password
+    depends_on:
+      - mysql_ordre
+
+  gateway:
+    build: ./Gateway
+    ports: ["8000:80"]
+    volumes:
+      - ./Gateway/wwwroot:/app/wwwroot
+    depends_on:
+      - kunde
+      - produkt
+      - ordre
+
+  mysql_kunde:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: kundedb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports: ["3307:3306"]
+
+  mysql_produkt:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: produktdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports: ["3308:3306"]
+
+  mysql_ordre:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ordredb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports: ["3309:3306"]
+```
 
 3. **Opret undermapper og filer:**
 ```bash
