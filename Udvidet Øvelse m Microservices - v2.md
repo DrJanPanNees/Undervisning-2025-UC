@@ -146,6 +146,7 @@ mkdir Gateway KundeService ProduktService OrdreService
 ```
 
 ### KundeService.csproj
+```
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
@@ -160,9 +161,10 @@ mkdir Gateway KundeService ProduktService OrdreService
   </ItemGroup>
 
 </Project>
+```
 ---
 ### ProduktService.csproj
-
+```
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
@@ -177,8 +179,10 @@ mkdir Gateway KundeService ProduktService OrdreService
   </ItemGroup>
 
 </Project>
+```
 ---
 ### OrdreService.csproj
+```
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
@@ -193,6 +197,7 @@ mkdir Gateway KundeService ProduktService OrdreService
   </ItemGroup>
 
 </Project>
+```
 --- 
 
 
