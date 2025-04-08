@@ -207,7 +207,7 @@ services:
     ports: ["3309:3306"]
 ```
 
-3. **Opret undermapper og filer:**
+3. **Opret undermapper og filer (hvis du ikke har gjort det):**
 ```bash
 mkdir Gateway KundeService ProduktService OrdreService
 cd Gateway && nano Program.cs && cd ..
