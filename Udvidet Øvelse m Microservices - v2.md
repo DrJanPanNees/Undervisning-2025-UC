@@ -60,6 +60,113 @@ mkdir Gateway KundeService ProduktService OrdreService
 
 ---
 
+## 🗂️ Fil- og mappestruktur
+
+```bash
+/MicroserviceDemo
+├── docker-compose.yml
+├── Gateway
+│   ├── Program.cs
+│   ├── appsettings.json
+│   ├── Dockerfile
+│   ├── Gateway.csproj
+│   └── wwwroot
+│       └── index.html
+├── KundeService
+│   ├── Program.cs
+│   ├── Kunde.cs
+│   ├── KundeContext.cs
+│   ├── Controllers
+│   │   └── KundeController.cs
+│   ├── Dockerfile
+│   └── KundeService.csproj
+├── ProduktService
+│   ├── Program.cs
+│   ├── Produkt.cs
+│   ├── ProduktContext.cs
+│   ├── Controllers
+│   │   └── ProduktController.cs
+│   ├── Dockerfile
+│   └── ProduktService.csproj
+├── OrdreService
+│   ├── Program.cs
+│   ├── Ordre.cs
+│   ├── OrdreContext.cs
+│   ├── Controllers
+│   │   └── OrdreController.cs
+│   ├── Dockerfile
+│   └── OrdreService.csproj
+```
+
+### 📄 Gateway appsettings.json
+
+📌 **Hvad den gør**: Denne fil definerer hvordan gatewayen (YARP) skal rute kald til de tre microservices baseret på URL-sti (fx /kunde).
+
+💡 For at tilføje en ny service (fx LagerService):
+1. Tilføj ny `Route` med path `/lager/{**catch-all}` og `ClusterId: lagerCluster`
+2. Tilføj `lagerCluster` under `Clusters` med korrekt adresse (fx http://lager:80/)
+
+### Eksempel:
+```json
+{
+  "ReverseProxy": {
+    "Routes": {
+      "kunde": {
+        "ClusterId": "kundeCluster",
+        "Match": { "Path": "/kunde/{**catch-all}" }
+      },
+      "produkt": {
+        "ClusterId": "produktCluster",
+        "Match": { "Path": "/produkt/{**catch-all}" }
+      },
+      "ordre": {
+        "ClusterId": "ordreCluster",
+        "Match": { "Path": "/ordre/{**catch-all}" }
+      }
+    },
+    "Clusters": {
+      "kundeCluster": {
+        "Destinations": {
+          "dest1": { "Address": "http://kunde:80/" }
+        }
+      },
+      "produktCluster": {
+        "Destinations": {
+          "dest1": { "Address": "http://produkt:80/" }
+        }
+      },
+      "ordreCluster": {
+        "Destinations": {
+          "dest1": { "Address": "http://ordre:80/" }
+        }
+      }
+    }
+  }
+}
+```
+
+### 🐳 Dockerfile til alle services
+
+📌 **Hvorfor Dockerfiles er nødvendige**: Hver microservice skal pakkes som en container, og `docker-compose` bruger Dockerfiles til at bygge dem. Hvis Dockerfile mangler, kan `build:` i `docker-compose.yml` ikke fungere.
+
+```dockerfile
+# Dockerfile til .NET microservice (fx KundeService)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "KundeService.dll"]
+```
+_Erstat `KundeService.dll` med navnet på den aktuelle service._
+
 ## 📁 2. Projektfiler og opsætning
 
 ### 🧩 docker-compose.yml
@@ -157,10 +264,36 @@ Indhold:
 
 ### Gateway (Program.cs)
 ```csharp
-app.UseAuthentication(); // Tjek JWT-token
-app.UseAuthorization();  // Kræv godkendelse
-app.UseStaticFiles();    // Serv HTML
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateLifetime = false,
+            ValidateIssuerSigningKey = false,
+            SignatureValidator = (token, _) => new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token)
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+var app = builder.Build();
+
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapReverseProxy().RequireAuthorization();
+
+app.Run();
 ```
 
 ### KundeService / ProduktService / OrdreService
