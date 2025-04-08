@@ -1,78 +1,28 @@
-# Opdateret Øvelse: Microservices med Ubuntu + YARP + MySQL
+# 🧪 Microservices med Ubuntu, YARP og MySQL
 
-## ✅ Tjekliste: Virker systemet som forventet?
+## 🧭 Introduktion
 
-| Testpunkt | Hvad du skal tjekke | Hvordan |
-|-----------|----------------------|--------|
-| 🟢 Gateway kører | Forsiden vises i browseren | Besøg `http://localhost:8000` |
-| 🟢 Link til kunde, produkt og ordre virker | Klik på links – de går via gatewayen | Linkene skal ramme `/kunde`, `/produkt`, `/ordre` |
-| 🟢 API-endpoints virker med token | API'er skal svare korrekt via gateway | Brug `curl` eller Swagger med `Authorization: Bearer demo-token` |
-| 🟢 Data gemmes i databasen | POST til fx `/kunde` og tjek med GET | Brug Swagger eller curl |
-| 🟢 Swagger virker | Kan du se Swagger UI i browseren? | `http://localhost:6001/swagger` osv. |
+Dette projekt viser, hvordan man opsætter en komplet microservice-arkitektur med:
+- 3 uafhængige microservices (Kunde, Produkt, Ordre)
+- En API Gateway med YARP (reverse proxy)
+- MySQL databaser til hver service
+- En statisk HTML-forside
+- Docker Compose som orchestration
 
-## 📁 Formål: Få overblik over mappestruktur og filplacering
+Du kan bruge dette som øvelse, demo eller udgangspunkt for videreudvikling.
 
-```
-/MicroserviceDemo
-├── Gateway
-│   ├── Program.cs
-│   ├── appsettings.json
-│   ├── Gateway.csproj
-│   └── Dockerfile
-├── KundeService
-│   ├── Controllers/KundeController.cs
-│   ├── Program.cs
-│   ├── KundeService.csproj
-│   └── Dockerfile
-├── ProduktService
-│   ├── Controllers/ProduktController.cs
-│   ├── Program.cs
-│   ├── ProduktService.csproj
-│   └── Dockerfile
-├── OrdreService
-│   ├── Controllers/OrdreController.cs
-│   ├── Program.cs
-│   ├── OrdreService.csproj
-│   └── Dockerfile
-└── docker-compose.yml
-```
+---
 
 ## 🎯 Læringsmål
 
-```
-[Browser eller curl]
-        |
-        v
-  +----------------------+ 
-  |    API Gateway       |  ← Tjekker token, ruter kaldet
-  |----------------------|
-  | // Program.cs        |
-  | app.UseAuthentication();           // Aktiverer JWT-token validering
-  | app.UseAuthorization();            // Sikrer adgang kun gives hvis token er valid
-  | app.MapReverseProxy()              // Registrerer YARP som proxy
-  |     .RequireAuthorization();       // Gør det obligatorisk med godkendelse
-  +----------------------+
-        |
-        v
-+------------------+  +---------------------+  +------------------+
-|  KundeService    |  |   ProduktService    |  |   OrdreService   |
-|------------------|  |---------------------|  |------------------|
-| // KundeController.cs | // ProduktController.cs | // OrdreController.cs |
-| [HttpGet]        |  | [HttpPost]          |  | [HttpGet]        |
-| return Ok(...)   |  | _context.Add(...)   |  | ToListAsync()    |
-|------------------|  | SaveChangesAsync()  |  |------------------|
-| // KundeContext.cs | // ProduktContext.cs | // OrdreContext.cs |
-| DbSet<Kunde>     |  | DbSet<Produkt>      |  | DbSet<Ordre>     |
-+------------------+  +---------------------+  +------------------+
-```
-
-
-Ved endt øvelse vil deltageren kunne:
+Ved endt øvelse vil du kunne:
 - Bygge og deploye .NET-baserede microservices
 - Anvende YARP som API Gateway med routing og auth
 - Integrere MySQL databaser i containerbaseret miljø
 - Tilføje statiske HTML-filer i ASP.NET Gateway
 - Teste microservices via gateway med curl og browser
+
+---
 
 ## 🧠 Forudsætninger
 
@@ -81,67 +31,38 @@ Ved endt øvelse vil deltageren kunne:
 - Introduktion til Docker og Docker Compose
 - Evt. kendskab til SQL og databaseforbindelser
 
-## 🛠️ Fejlsøgning
+---
 
-- Tjek kørende containere:
-  ```bash
-  docker ps
-  ```
-- Se logs fra en service:
-  ```bash
-  docker logs ordre
-  ```
-- Genstart hele miljøet (inkl. volumes):
-  ```bash
-  docker-compose down -v
-  docker-compose up --build
-  ```
-- Tjek databaseforbindelser: Er connection strings korrekte?
-- Brug `curl` til at teste gatewayen direkte – fx med token:
-  ```bash
-  curl -H "Authorization: Bearer demo-token" http://localhost:8000/kunde
-  ```
+## ⚙️ 1. Opsætning af miljø (Ubuntu)
 
-## Installation af Ubuntu Server og forberedelse
+### 📦 Installation af Docker på Ubuntu Server 22.04 LTS
 
-Før du starter, skal du bruge en virtuel maskine eller fysisk maskine med **Ubuntu Server 22.04 LTS**.
+```bash
+sudo apt update
+sudo apt install docker.io
+sudo apt install docker-compose
 
-1. **Installer Ubuntu Server**
-   - Download ISO fra [https://ubuntu.com/download/server](https://ubuntu.com/download/server)
-   - Installer med standardindstillinger, evt. tilføj OpenSSH under installationen
+# Find dit brugernavn og tilføj det til docker-gruppen
+whoami
+sudo usermod -aG docker <dit-brugernavn>
 
-2. **Installer nødvendige værktøjer**
-   Log ind på Ubuntu og kør:
-   ```bash
-   sudo apt update
-   sudo apt install docker.io
-   sudo apt install docker-compose
+# Genstart systemet
+sudo reboot
+```
 
-   # Find dit brugernavn
-   whoami
+### 📁 Projektstruktur
 
-   # Tilføj brugeren til docker-gruppen (så du ikke skal skrive 'sudo' hver gang)
-   sudo usermod -aG docker <dit-brugernavn>  # fx: sudo usermod -aG docker jpas
-
-   # Genstart systemet, så ændringen træder i kraft
-   sudo reboot
-   ```
-   ```
-
-Efter genstart er du klar til at opsætte projektet.
-
-
-1. **Opret projektmappe:**
 ```bash
 mkdir MicroserviceDemo
 cd MicroserviceDemo
+mkdir Gateway KundeService ProduktService OrdreService
 ```
 
-2. **Opret `docker-compose.yml` med nano:**
-```bash
-nano docker-compose.yml
-```
-Indsæt følgende i filen:
+---
+
+## 📁 2. Projektfiler og opsætning
+
+### 🧩 docker-compose.yml
 ```yaml
 version: '3.9'
 services:
@@ -206,31 +127,19 @@ services:
       MYSQL_PASSWORD: password
     ports: ["3309:3306"]
 ```
-
-3. **Opret undermapper og filer:**
-```bash
-mkdir Gateway KundeService ProduktService OrdreService
-cd Gateway && nano Program.cs && cd ..
-cd KundeService && nano Program.cs && cd ..
-cd ProduktService && nano Program.cs && cd ..
-cd OrdreService && nano Program.cs && cd ..
 ```
 
-Gentag for nødvendige filer som `*.csproj`, `Dockerfile`, `Controllers/*.cs`, `Models/*.cs`, osv.
-
-> Du kan også oprette `index.html` som frontend via gatewayen:
+### 🌐 HTML forside
 ```bash
 mkdir -p Gateway/wwwroot
 nano Gateway/wwwroot/index.html
 ```
-Indsæt fx følgende HTML som eksempel på en simpel forside:
+
+Indhold:
 ```html
 <!DOCTYPE html>
-<html lang="da">
-<head>
-  <meta charset="UTF-8">
-  <title>Microservice Demo</title>
-</head>
+<html>
+<head><title>Microservice Demo</title></head>
 <body>
   <h1>Velkommen til MicroserviceDemo</h1>
   <ul>
@@ -240,241 +149,27 @@ Indsæt fx følgende HTML som eksempel på en simpel forside:
   </ul>
 </body>
 </html>
-```bash
-mkdir -p Gateway/wwwroot
-nano Gateway/wwwroot/index.html
 ```
-
-## 🗄️ Hvordan fungerer databaserne i microservices?
-
-I dette setup med `docker-compose` har **hver microservice sin egen databasecontainer**:
-
-| Service         | Database-container | Adgangsforbindelse                     |
-|-----------------|--------------------|----------------------------------------|
-| KundeService    | `mysql_kunde`      | `server=mysql_kunde;...`               |
-| ProduktService  | `mysql_produkt`    | `server=mysql_produkt;...`             |
-| OrdreService    | `mysql_ordre`      | `server=mysql_ordre;...`               |
-
-### 🔐 Hvorfor adskille databaserne?
-- **Isolation:** Services kan ændre schema uden at påvirke andre
-- **Sikkerhed:** Ingen adgang til andres data
-- **Skalering:** Du kan skalere fx ProduktService uden at påvirke resten
-- **Ejerskab:** Hvert team ejer og vedligeholder sin egen datamodel
-
-### 🤝 Hvad hvis én service har brug for en andens data?
-Så skal det ske via **et API-kald**, fx:
-```csharp
-// Inde i OrdreService:
-var kunde = await httpClient.GetFromJsonAsync<Kunde>("http://gateway/kunde/42");
-```
-
-➡️ **Del aldrig databasen direkte** – eksponér data gennem en **offentlig endpoint** i den pågældende service.
 
 ---
 
-## Opsætning fra terminal (Ubuntu)
+## 🧱 3. Kode til services og gateway
 
-### 🚀 Byg og start projektet
-Når alle filer og mapper er oprettet, kør:
-```bash
-docker-compose build
-docker-compose up
-```
-
-💡 Tip: Brug `-d` til at køre det i baggrunden:
-```bash
-docker-compose up -d
-```
-
-Tjek at alt kører:
-```bash
-docker ps
-```
-
-Gå derefter til `http://localhost:8000` for at teste forsiden via gateway.
-
-## Ændringer i opsætning
-
-1. **Ubuntu som base-setup:**
-   - Alle tests og opsætning forudsætter en *Ubuntu Server* VM (f.eks. Ubuntu 22.04 LTS).
-   - Docker og Docker Compose skal installeres på Ubuntu-maskinen:
-     ```bash
-     sudo apt update
-     sudo apt install docker.io docker-compose -y
-     sudo usermod -aG docker $USER
-     ```
-
-2. **API Gateway med YARP:**
-   - Gateway-projektet (C#) anvender YARP til at rute kald til microservices via reverse proxy.
-
-3. **Microservices:**
-   - OrdreService
-   - ProduktService
-   - KundeService
-   
-   Hver service:
-   - Skrives i C# (ASP.NET Web API)
-   - Kører i sin egen container
-   - Bruger *egen MySQL database*
-
-4. **HTML forside via gatewayen:**
-   - `index.html` placeres i Gateway-projektet
-   - Indeholder knapper/links til `/kunde`, `/produkt`, `/ordre`
-   - Disse aktiverer kald gennem gatewayen til respektive microservices
-
-5. **Docker Compose oversigt (udvidet):**
-```yaml
-version: '3.9'
-services:
-  kunde:
-    build: ./KundeService
-    ports: ["6001:80"]
-    environment:
-      - ConnectionStrings__DefaultConnection=server=mysql_kunde;port=3306;database=kundedb;user=user;password=password
-    depends_on:
-      - mysql_kunde
-
-  produkt:
-    build: ./ProduktService
-    ports: ["6002:80"]
-    environment:
-      - ConnectionStrings__DefaultConnection=server=mysql_produkt;port=3306;database=produktdb;user=user;password=password
-    depends_on:
-      - mysql_produkt
-
-  ordre:
-    build: ./OrdreService
-    ports: ["6003:80"]
-    environment:
-      - ConnectionStrings__DefaultConnection=server=mysql_ordre;port=3306;database=ordredb;user=user;password=password
-    depends_on:
-      - mysql_ordre
-
-  gateway:
-    build: ./Gateway
-    ports: ["8000:80"]
-    volumes:
-      - ./Gateway/wwwroot:/app/wwwroot
-    depends_on:
-      - kunde
-      - produkt
-      - ordre
-
-  mysql_kunde:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: kundedb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    ports: ["3307:3306"]
-
-  mysql_produkt:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: produktdb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    ports: ["3308:3306"]
-
-  mysql_ordre:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ordredb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    ports: ["3309:3306"]
-```
-
-6. **JWT-beskyttelse i Gateway**
-
-Program.cs (Gateway):
+### Gateway (Program.cs)
 ```csharp
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Yarp.ReverseProxy;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddAuthentication("MyScheme")
-    .AddJwtBearer("MyScheme", options =>
-    {
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var token = context.Request.Headers["Authorization"];
-                if (token == "Bearer demo-token")
-                {
-                    context.Principal = new System.Security.Claims.ClaimsPrincipal(
-                        new System.Security.Claims.ClaimsIdentity("MyScheme")
-                    );
-                    context.Success();
-                }
-                return Task.CompletedTask;
-            }
-        };
-    });
-
-builder.Services.AddAuthorization();
-builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
-
-var app = builder.Build();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.UseStaticFiles();
+app.UseAuthentication(); // Tjek JWT-token
+app.UseAuthorization();  // Kræv godkendelse
+app.UseStaticFiles();    // Serv HTML
 app.MapReverseProxy().RequireAuthorization();
-
-app.Run("http://0.0.0.0:80");
 ```
 
-7. **Swagger i alle services**
+### KundeService / ProduktService / OrdreService
+- Model (fx `Kunde.cs`)
+- DbContext
+- Controller med `[HttpGet]` og `[HttpPost]`
+- Swagger og seed data i `Program.cs`
 
-Tilføj i hver services `Program.cs`:
-```csharp
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-```
-
-➡️ Du kan derefter tilgå Swagger på fx:
-- `http://localhost:6001/swagger`
-- `http://localhost:6002/swagger`
-- `http://localhost:6003/swagger`
-
-8. **Refleksionsspørgsmål og sikkerhedstest**
-
-💬 Diskutér i grupper:
-- Hvilke endpoints kræver token?
-- Hvad sker der, hvis `.RequireAuthorization()` fjernes i gateway?
-- Hvad sker der, hvis du sender et manipuleret token?
-
-Test via:
-```bash
-# Uden token – skal fejle
-curl http://localhost:8000/kunde
-
-# Med forkert token – skal også fejle
-curl -H "Authorization: Bearer bad-token" http://localhost:8000/produkt
-
-# Med korrekt token – skal virke
-curl -H "Authorization: Bearer demo-token" http://localhost:8000/ordre
-```
-
-📌 Diskutér:
-- Hvordan relaterer dette til OWASP Top 10?
-- Hvordan kan man forbedre sikkerheden i dette setup?
-
-9. **KundeService kodeeksempel**
+#### Eksempel: KundeService
 
 **Kunde.cs**
 ```csharp
@@ -492,7 +187,6 @@ using Microsoft.EntityFrameworkCore;
 public class KundeContext : DbContext
 {
     public KundeContext(DbContextOptions<KundeContext> options) : base(options) {}
-
     public DbSet<Kunde> Kunder => Set<Kunde>();
 }
 ```
@@ -571,7 +265,7 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 ```
 
-10. **ProduktService kodeeksempel**
+#### Eksempel: ProduktService
 
 **Produkt.cs**
 ```csharp
@@ -590,7 +284,6 @@ using Microsoft.EntityFrameworkCore;
 public class ProduktContext : DbContext
 {
     public ProduktContext(DbContextOptions<ProduktContext> options) : base(options) {}
-
     public DbSet<Produkt> Produkter => Set<Produkt>();
 }
 ```
@@ -619,11 +312,11 @@ public class ProduktController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] Produkt produkt)
+    public async Task<IActionResult> Post([FromBody] Produkt nyProdukt)
     {
-        _context.Produkter.Add(produkt);
+        _context.Produkter.Add(nyProdukt);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(Get), new { id = produkt.Id }, produkt);
+        return CreatedAtAction(nameof(Get), new { id = nyProdukt.Id }, nyProdukt);
     }
 }
 ```
@@ -669,29 +362,164 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 ```
 
+#### Eksempel: OrdreService
 
-11. **Refleksionsøvelse: Hvad har vi bygget – og hvordan kan det forbedres?**
+**Ordre.cs**
+```csharp
+public class Ordre
+{
+    public int Id { get; set; }
+    public string KundeNavn { get; set; }
+    public DateTime Dato { get; set; }
+}
+```
 
-💬 Overvej og diskuter følgende:
+**OrdreContext.cs**
+```csharp
+using Microsoft.EntityFrameworkCore;
 
-### 🧩 Arkitektur
-- Hvorfor bruger vi en gateway fremfor direkte adgang til services?
-- Hvordan ville det fungere med flere gateways eller load balancing?
+public class OrdreContext : DbContext
+{
+    public OrdreContext(DbContextOptions<OrdreContext> options) : base(options) {}
+    public DbSet<Ordre> Ordrer => Set<Ordre>();
+}
+```
 
-### 🔐 Sikkerhed
-- Er vores token-beskyttelse god nok i en rigtig verden?
-- Hvordan kunne vi bruge claims eller scopes til at adskille brugerroller?
+**OrdreController.cs**
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-### 🗃️ Data og skalering
-- Hvad sker der, hvis én database bliver langsom?
-- Skal hver service nødvendigvis have sin egen database?
-- Hvordan kan vi synkronisere data mellem services?
+[ApiController]
+[Route("[controller]")]
+public class OrdreController : ControllerBase
+{
+    private readonly OrdreContext _context;
 
-### 💡 Udvidelser
-- Tilføj en fjerde service (fx LagerService eller BrugerService)
-- Lav frontend med JavaScript der kalder API'en dynamisk
-- Deploy hele systemet til cloud eller Kubernetes
+    public OrdreController(OrdreContext context)
+    {
+        _context = context;
+    }
 
-➡️ Afslut med en gruppefremlæggelse eller skriftlig opsamling: *“Hvad ville du gøre anderledes i en produktion?”*
+    [HttpGet]
+    public async Task<IActionResult> Get()
+    {
+        var ordrer = await _context.Ordrer.ToListAsync();
+        return Ok(ordrer);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] Ordre nyOrdre)
+    {
+        _context.Ordrer.Add(nyOrdre);
+        await _context.SaveChangesAsync();
+        return CreatedAtAction(nameof(Get), new { id = nyOrdre.Id }, nyOrdre);
+    }
+}
+```
+
+**Program.cs**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<OrdreContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<OrdreContext>();
+    db.Database.Migrate();
+
+    if (!db.Ordrer.Any())
+    {
+        db.Ordrer.AddRange(
+            new Ordre { KundeNavn = "Anders And", Dato = DateTime.Today },
+            new Ordre { KundeNavn = "Mickey Mouse", Dato = DateTime.Today }
+        );
+        db.SaveChanges();
+    }
+}
+
+app.Run();
+```
+
+---
+
+## 🧪 4. Kørsel og test
+
+```bash
+docker-compose build
+docker-compose up
+```
+
+Tjek:
+- `http://localhost:8000` viser forside
+- Swagger på `6001`, `6002`, `6003`
+- Brug `curl` til at teste via token:
+```bash
+curl -H "Authorization: Bearer demo-token" http://localhost:8000/kunde
+```
+
+---
+
+## 🧩 5. Refleksion og næste skridt
+
+### Arkitektur
+- Hvorfor gateway? Hvorfor egen database?
+- Kunne vi have én fælles database?
+
+### Sikkerhed
+- Er `demo-token` nok?
+- Hvordan kunne vi lave brugerroller eller scopes?
+
+### Udvidelser
+- Tilføj LagerService
+- Brug frontend med JavaScript `fetch()`
+- Deploy til cloud eller Kubernetes
+
+---
+
+## 🛠️ Fejlsøgning
+
+```bash
+docker ps               # Tjek containere
+docker logs <navn>      # Se logs
+curl ...                # Test endpoints
+```
+
+Ved fejl:
+```bash
+docker-compose down -v
+docker-compose build
+docker-compose up
+```
+
+---
+
+## ✅ Tjekliste
+
+| Test | Hvad du skal se |
+|------|------------------|
+| Forside virker | http://localhost:8000 |
+| Links ruter korrekt | /kunde, /produkt, /ordre |
+| Swagger virker | http://localhost:6001/swagger osv. |
+| Token-check virker | Brug curl med og uden token |
+| Data gemmes | POST til fx /kunde |
 
 ---
