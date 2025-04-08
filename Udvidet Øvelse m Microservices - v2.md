@@ -270,6 +270,14 @@ services:
 
 ### 🌐 Gateway Program.cs
 
+I denne del af øvelsen skal vi konfigurere **API Gateway**-delen af systemet. Gatewayen fungerer som en indgang for alle anmodninger til systemet og videresender disse anmodninger til de relevante microservices. I denne sektion vil vi implementere følgende:
+
+- **JWT Authentication**: Gatewayen vil håndtere autentificering af brugere ved hjælp af JSON Web Tokens (JWT).
+- **Routing**: YARP (Yet Another Reverse Proxy) bruges til at styre, hvilken microservice anmodningen skal videresendes til, baseret på URL-stien (fx `/kunde`, `/produkt` eller `/ordre`).
+- **Authorization**: Gatewayen sikrer, at kun autoriserede brugere kan få adgang til microservices.
+
+Denne konfiguration hjælper os med at beskytte systemet mod uautoriserede adgangsforsøg og sikre, at kun korrekt autentificerede brugere kan tilgå de nødvendige ressourcer.
+
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
