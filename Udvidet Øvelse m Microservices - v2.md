@@ -1,6 +1,6 @@
 # 🧪 Microservices med Ubuntu, YARP og MySQL
 
-## 🛍 Introduktion
+## 🧭 Introduktion
 
 Dette projekt viser, hvordan man opsætter en komplet microservice-arkitektur med:
 - 3 uafhængige microservices (Kunde, Produkt, Ordre)
@@ -8,8 +8,6 @@ Dette projekt viser, hvordan man opsætter en komplet microservice-arkitektur me
 - MySQL databaser til hver service
 - En statisk HTML-forside
 - Docker Compose som orchestration
-
-📌 **Hvorfor er det vigtigt?** Microservices giver bedre skalerbarhed, løsrivelse af komponenter og mulighed for hurtigere udvikling og vedligehold. Med denne øvelse får du praktisk erfaring i at sætte hele miljøet op.
 
 Du kan bruge dette som øvelse, demo eller udgangspunkt for videreudvikling.
 
@@ -23,7 +21,6 @@ Ved endt øvelse vil du kunne:
 - Integrere MySQL databaser i containerbaseret miljø
 - Tilføje statiske HTML-filer i ASP.NET Gateway
 - Teste microservices via gateway med curl og browser
-- Forstå JWT-token og adgangskontrol i microservice-setup
 
 ---
 
@@ -51,11 +48,6 @@ sudo usermod -aG docker <dit-brugernavn>
 
 # Genstart systemet
 sudo reboot
-```
-
-💡 Alternativt kan du bruge det officielle Docker-installationsscript, hvis du vil sikre dig den nyeste version:
-```bash
-curl -fsSL https://get.docker.com | sudo sh
 ```
 
 ### 📁 Projektstruktur
@@ -96,22 +88,25 @@ mkdir Gateway KundeService ProduktService OrdreService
 │   │   └── ProduktController.cs
 │   ├── Dockerfile
 │   └── ProduktService.csproj
-└── OrdreService
-    ├── Program.cs
-    ├── Ordre.cs
-    ├── OrdreContext.cs
-    ├── Controllers
-    │   └── OrdreController.cs
-    ├── Dockerfile
-    └── OrdreService.csproj
+├── OrdreService
+│   ├── Program.cs
+│   ├── Ordre.cs
+│   ├── OrdreContext.cs
+│   ├── Controllers
+│   │   └── OrdreController.cs
+│   ├── Dockerfile
+│   └── OrdreService.csproj
 ```
-
-📌 **Bemærk**: Hver service har sin egen mappe og Dockerfile. Husk at ændre navnet på .dll-filen i Dockerfile til den relevante service (fx `ProduktService.dll`, `OrdreService.dll`).
-
----
 
 ### 📄 Gateway appsettings.json
 
+📌 **Hvad den gør**: Denne fil definerer hvordan gatewayen (YARP) skal rute kald til de tre microservices baseret på URL-sti (fx /kunde).
+
+💡 For at tilføje en ny service (fx LagerService):
+1. Tilføj ny `Route` med path `/lager/{**catch-all}` og `ClusterId: lagerCluster`
+2. Tilføj `lagerCluster` under `Clusters` med korrekt adresse (fx http://lager:80/)
+
+### Eksempel:
 ```json
 {
   "ReverseProxy": {
@@ -150,11 +145,63 @@ mkdir Gateway KundeService ProduktService OrdreService
 }
 ```
 
----
+### KundeService.csproj
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
-### 🐳 Dockerfile til microservices
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <DockerDefaultTargetOS>linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
+---
+### ProduktService.csproj
+
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <DockerDefaultTargetOS>linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
+---
+### OrdreService.csproj
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <DockerDefaultTargetOS>linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
+--- 
+
+
+### 🐳 Dockerfile til alle services
+
+📌 **Hvorfor Dockerfiles er nødvendige**: Hver microservice skal pakkes som en container, og `docker-compose` bruger Dockerfiles til at bygge dem. Hvis Dockerfile mangler, kan `build:` i `docker-compose.yml` ikke fungere.
 
 ```dockerfile
+# Dockerfile til .NET microservice (fx KundeService)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
@@ -169,19 +216,11 @@ WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "KundeService.dll"]
 ```
+_Erstat `KundeService.dll` med navnet på den aktuelle service._
 
-🔁 **Vigtigt:** Dockerfile bruges af hver enkelt service til at starte .NET-applikationen, og du skal ændre navnet i `ENTRYPOINT` til den rigtige `.dll`-fil:
-
-- `KundeService/Dockerfile`: `ENTRYPOINT ["dotnet", "KundeService.dll"]`
-- `ProduktService/Dockerfile`: `ENTRYPOINT ["dotnet", "ProduktService.dll"]`
-- `OrdreService/Dockerfile`: `ENTRYPOINT ["dotnet", "OrdreService.dll"]`
-
-Ellers vil containeren prøve at starte den forkerte service og fejle.
-
----
+## 📁 2. Projektfiler og opsætning
 
 ### 🧩 docker-compose.yml
-
 ```yaml
 version: '3.9'
 services:
@@ -246,87 +285,15 @@ services:
       MYSQL_PASSWORD: password
     ports: ["3309:3306"]
 ```
+```
 
----
-### KundeService.csproj
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-</Project>
-
----
-
-### ProduktService.csproj
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-</Project>
-
----
-### OrdreService.csproj
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-</Project>
-
-
----
 ### 🌐 HTML forside
+```bash
+mkdir -p Gateway/wwwroot
+nano Gateway/wwwroot/index.html
+```
 
+Indhold:
 ```html
 <!DOCTYPE html>
 <html>
@@ -344,16 +311,9 @@ services:
 
 ---
 
-### 🌐 Gateway Program.cs
+## 🧱 3. Kode til services og gateway
 
-I denne del af øvelsen skal vi konfigurere **API Gateway**-delen af systemet. Gatewayen fungerer som en indgang for alle anmodninger til systemet og videresender disse anmodninger til de relevante microservices. I denne sektion vil vi implementere følgende:
-
-- **JWT Authentication**: Gatewayen vil håndtere autentificering af brugere ved hjælp af JSON Web Tokens (JWT).
-- **Routing**: YARP (Yet Another Reverse Proxy) bruges til at styre, hvilken microservice anmodningen skal videresendes til, baseret på URL-stien (fx `/kunde`, `/produkt` eller `/ordre`).
-- **Authorization**: Gatewayen sikrer, at kun autoriserede brugere kan få adgang til microservices.
-
-Denne konfiguration hjælper os med at beskytte systemet mod uautoriserede adgangsforsøg og sikre, at kun korrekt autentificerede brugere kan tilgå de nødvendige ressourcer.
-
+### Gateway (Program.cs)
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
@@ -387,9 +347,13 @@ app.MapReverseProxy().RequireAuthorization();
 app.Run();
 ```
 
----
+### KundeService / ProduktService / OrdreService
+- Model (fx `Kunde.cs`)
+- DbContext
+- Controller med `[HttpGet]` og `[HttpPost]`
+- Swagger og seed data i `Program.cs`
 
-### 👤 KundeService
+#### Eksempel: KundeService
 
 **Kunde.cs**
 ```csharp
@@ -485,9 +449,7 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 ```
 
----
-
-### 📦 ProduktService
+#### Eksempel: ProduktService
 
 **Produkt.cs**
 ```csharp
@@ -584,9 +546,7 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 ```
 
----
-
-### 🧾 OrdreService
+#### Eksempel: OrdreService
 
 **Ordre.cs**
 ```csharp
@@ -683,8 +643,6 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 ```
 
----, så dokumentet ikke bliver for langt ét sted. Skal jeg fortsætte med det?
-
 ---
 
 ## 🧪 4. Kørsel og test
@@ -702,6 +660,50 @@ Tjek:
 curl -H "Authorization: Bearer demo-token" http://localhost:8000/kunde
 ```
 
-📌 **Hvor kommer token fra?** I denne demo bruges en hardcoded token-check i gatewayen, som godtager enhver JWT uden validering. Du kan oprette et token f.eks. via https://jwt.io, men i praksis bør dette håndteres af en Identity Provider (fx Auth0 eller Duende IdentityServer).
+---
+
+## 🧩 5. Refleksion og næste skridt
+
+### Arkitektur
+- Hvorfor gateway? Hvorfor egen database?
+- Kunne vi have én fælles database?
+
+### Sikkerhed
+- Er `demo-token` nok?
+- Hvordan kunne vi lave brugerroller eller scopes?
+
+### Udvidelser
+- Tilføj LagerService
+- Brug frontend med JavaScript `fetch()`
+- Deploy til cloud eller Kubernetes
+
+---
+
+## 🛠️ Fejlsøgning
+
+```bash
+docker ps               # Tjek containere
+docker logs <navn>      # Se logs
+curl ...                # Test endpoints
+```
+
+Ved fejl:
+```bash
+docker-compose down -v
+docker-compose build
+docker-compose up
+```
+
+---
+
+## ✅ Tjekliste
+
+| Test | Hvad du skal se |
+|------|------------------|
+| Forside virker | http://localhost:8000 |
+| Links ruter korrekt | /kunde, /produkt, /ordre |
+| Swagger virker | http://localhost:6001/swagger osv. |
+| Token-check virker | Brug curl med og uden token |
+| Data gemmes | POST til fx /kunde |
 
 ---
