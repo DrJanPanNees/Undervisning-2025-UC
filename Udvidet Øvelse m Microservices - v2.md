@@ -207,7 +207,7 @@ services:
     ports: ["3309:3306"]
 ```
 
-3. **Opret undermapper og filer (hvis du ikke har gjort det):**
+3. **Opret undermapper og filer:**
 ```bash
 mkdir Gateway KundeService ProduktService OrdreService
 cd Gateway && nano Program.cs && cd ..
@@ -218,7 +218,28 @@ cd OrdreService && nano Program.cs && cd ..
 
 Gentag for nødvendige filer som `*.csproj`, `Dockerfile`, `Controllers/*.cs`, `Models/*.cs`, osv.
 
-> Du kan også oprette `index.html`:
+> Du kan også oprette `index.html` som frontend via gatewayen:
+```bash
+mkdir -p Gateway/wwwroot
+nano Gateway/wwwroot/index.html
+```
+Indsæt fx følgende HTML som eksempel på en simpel forside:
+```html
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <title>Microservice Demo</title>
+</head>
+<body>
+  <h1>Velkommen til MicroserviceDemo</h1>
+  <ul>
+    <li><a href="/kunde">Kunde</a></li>
+    <li><a href="/produkt">Produkt</a></li>
+    <li><a href="/ordre">Ordre</a></li>
+  </ul>
+</body>
+</html>
 ```bash
 mkdir -p Gateway/wwwroot
 nano Gateway/wwwroot/index.html
