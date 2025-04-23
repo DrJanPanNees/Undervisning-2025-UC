@@ -1,0 +1,115 @@
+# ========================
+# Kunde Deployment
+# ========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kunde
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kunde
+  template:
+    metadata:
+      labels:
+        app: kunde
+    spec:
+      containers:
+      - name: kunde
+        image: dit-image-navn:kunde
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
+---
+# Kunde Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kunde
+spec:
+  selector:
+    app: kunde
+  ports:
+  - port: 80
+    targetPort: 80
+---
+# Kunde Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kunde-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kunde
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+# ========================
+# Produkt Deployment
+# ========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: produkt
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: produkt
+  template:
+    metadata:
+      labels:
+        app: produkt
+    spec:
+      containers:
+      - name: produkt
+        image: dit-image-navn:produkt
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
+---
+# Produkt Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: produkt
+spec:
+  selector:
+    app: produkt
+  ports:
+  - port: 80
+    targetPort: 80
+---
+# Produkt Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: produkt-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: produkt
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
