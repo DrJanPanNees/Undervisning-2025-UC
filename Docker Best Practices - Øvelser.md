@@ -141,25 +141,82 @@ CMD ["node", "server.js"]
 
 ---
 
-## Øvelse 3: Brug af `.dockerignore` for at reducere image-størrelse
-**Beskrivelse:**
-Reducer størrelsen af dine Docker-images ved at ekskludere unødvendige filer fra build-processen.
+# Øvelse 3: Brug af `.dockerignore` for mindre build-context og image
 
-**Opgaver:**
-1. Opret en `.dockerignore`-fil i dit projekt.
-2. Ekskluder `node_modules`, `logs`, og `.git`.
-3. Byg dit Docker-image og sammenlign størrelsen med og uden `.dockerignore`.
+**Formål:** Undgå at sende/indbygge unødvendige filer i dit Docker-image. Det giver hurtigere builds og ofte mindre images.
 
-**Eksempel på `.dockerignore`:**
-```
-node_modules/
-logs/
-.git/
-.DS_Store
-.env
-```
+> **Note:** `.dockerignore` reducerer først og fremmest *build-contexten* (det der sendes til Docker ved `docker build`). Image-størrelsen bliver også mindre, hvis de ignorerede filer ellers ville være kopieret ind via `COPY . .`.
 
-**Diskussion:** Hvorfor er det vigtigt at ekskludere `node_modules` og `.git` fra Docker-image?
+---
+
+## Forudsætning
+Brug mappen fra **Øvelse 2** (den lille Node/Express-app med `Dockerfile` der har `COPY . .` til sidst).
+
+---
+
+## Trin
+
+1. **(Kun hvis du ikke har et Git-repo og nogle filer at ignorere)**  
+   ```bash
+   git init
+   git add .
+   git commit -m "init"
+   mkdir -p logs && echo "lorem ipsum" > logs/app.log
+   # Valgfrit: skab lidt volumen for at se forskellen tydeligt
+   dd if=/dev/zero of=logs/big.log bs=1M count=20 2>/dev/null
+   # Hvis du vil vise node_modules-effekten:
+   npm install
+   ```
+   > Du får nu en `.git/` mappe, en `logs/` mappe og evt. `node_modules/`.
+
+2. **Byg uden `.dockerignore` (baseline):**
+   ```bash
+   docker build --no-cache -t caching-demo:no-ignore .
+   ```
+
+3. **Opret `.dockerignore` i projektroden:**
+   ```gitignore
+   node_modules/
+   logs/
+   .git/
+   .DS_Store
+   .env
+   ```
+   > `node_modules/`: undgå at kopiere hostens moduler ind i imaget  
+   > `logs/`: runtime-filer hører ikke til i build  
+   > `.git/`: stort og ændrer sig hele tiden – ødelægger caching og fylder i imaget  
+   > `.env`: hemmeligheder skal ikke ind i imaget  
+   > `.DS_Store`: macOS-støj
+
+4. **Byg med `.dockerignore`:**
+   ```bash
+   docker build --no-cache -t caching-demo:ignore .
+   ```
+
+5. **Sammenlign størrelser og build-tid:**
+   ```bash
+   docker image ls | grep caching-demo
+   ```
+   Du bør se, at `:ignore` typisk er mindre end `:no-ignore` (især hvis `.git/` og `node_modules/` ellers var blevet kopieret). Build-tiden er også hurtigere, fordi der sendes mindre data til Docker.
+
+6. **(Valgfrit) Verificér at ignorerede filer ikke ender i imaget:**
+   ```bash
+   docker run --rm -it caching-demo:ignore sh -c "ls -la | head -n 50 && echo '---' && [ -d .git ] && echo '.git findes' || echo '.git findes ikke'"
+   ```
+
+---
+
+## Refleksion
+- Hvilke filer gav størst forskel – `.git`, `node_modules` eller `logs`?  
+- Hvordan påvirker `.git/` caching, hvis du committer ofte?  
+- Hvorfor er det en dårlig idé at bake `.env` (hemmeligheder) ind i et image?
+
+---
+
+## Bonus
+- Prøv at fjerne `logs/` fra `.dockerignore` og rebuild – blev imaget større?  
+- Tilføj en fil i repoet og commit igen. Med `.git/` i `.dockerignore` bør build-cachen være mere stabil.
+
 
 ---
 
