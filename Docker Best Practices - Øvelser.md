@@ -41,30 +41,103 @@ CMD ["node", "server.js"]
 
 ---
 
-## Øvelse 2: Optimering af caching i Dockerfile
-**Beskrivelse:**
-Lær hvordan du strukturerer din Dockerfile for at udnytte caching og minimere build-tid.
+# Øvelse 2: Optimering af caching i Dockerfile
 
-**Opgaver:**
-1. Skriv en Dockerfile, der installerer afhængigheder **før** at kopiere kildekoden.
-2. Brug kommandoen `docker build` og observer, hvilke lag der bliver genbrugt.
-3. Foretag en ændring i kildekoden og byg igen. Undersøg hvilke trin, der bliver genbygget.
+## Beskrivelse
+I denne øvelse lærer du, hvordan du kan strukturere din Dockerfile, så du udnytter caching og minimerer build-tiden.  
 
-**Eksempel på optimeret Dockerfile:**
+## Læringsmål
+- Forstå hvordan Docker cacher lag under build.  
+- Oplev forskellen på at ændre afhængigheder vs. at ændre kode.  
+- Kunne forklare hvorfor rækkefølgen i en Dockerfile betyder noget for build-tid.  
+
+---
+
+## Startkode
+
+Opret en ny mappe og læg disse filer i den:
+
+**`package.json`**
+```json
+{
+  "name": "caching-demo",
+  "version": "1.0.0",
+  "description": "Demo app til caching i Docker",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+```
+
+**`server.js`**
+```js
+const express = require("express");
+const app = express();
+const port = 3000;
+
+app.get("/", (req, res) => {
+  res.send("Hej fra Docker caching demo!");
+});
+
+app.listen(port, () => {
+  console.log(`Server kører på http://localhost:${port}`);
+});
+```
+
+---
+
+## Dockerfile
+
+**`Dockerfile`**
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
 
-# Kopiér kun package.json først for at udnytte caching
-COPY package.json package-lock.json ./
+# Kopiér kun package-filer først for at udnytte caching
+COPY package.json package-lock.json* ./
 RUN npm install
 
 # Kopiér resten af projektet
 COPY . .
+
 CMD ["node", "server.js"]
 ```
 
-**Diskussion:** Hvorfor bliver `npm install` ikke genkørt, hvis vi kun ændrer i kildekoden?
+> Bemærk: `package-lock.json*` gør, at den ikke fejler, hvis der ikke findes en lock-fil.
+
+---
+
+## Opgaver
+
+1. Byg Docker-billedet første gang:  
+   ```bash
+   docker build -t caching-demo .
+   ```
+2. Kør containeren:  
+   ```bash
+   docker run -p 3000:3000 caching-demo
+   ```
+   Tjek i browseren: [http://localhost:3000](http://localhost:3000)
+
+3. Lav en ændring i **server.js** (fx ændr teksten i `res.send`).  
+   - Byg igen med `docker build ...`  
+   - Undersøg hvilke trin bliver genbrugt fra cache?  
+
+4. Lav en ændring i **package.json** (fx tilføj en ny dependency med `npm install nodemon --save`).  
+   - Byg igen.  
+   - Hvad sker der nu? Hvorfor bliver `npm install` kørt igen?  
+
+---
+
+## Diskussion
+- Hvorfor bliver `npm install` kun kørt, når `package.json` ændres?  
+- Hvordan hjælper det med at spare tid i store projekter?  
+- Hvad ville der ske, hvis vi havde kopieret hele projektet *før* `npm install`?  
+
 
 ---
 
