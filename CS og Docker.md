@@ -9,6 +9,21 @@ I denne øvelse vil vi:
 
 ---
 
+## Mappe-struktur
+
+Når du er færdig med opsætningen, bør dit projekt se sådan ud:
+
+```
+CSharpDockerApp/
+├── App/
+│   ├── Program.cs
+│   ├── App.csproj
+│   └── Dockerfile
+├── docker-compose.yaml
+```
+
+---
+
 ## Trin 1: Opret en simpel C#-konsolapplikation
 Start med at oprette en ny C#-konsolapplikation:
 
