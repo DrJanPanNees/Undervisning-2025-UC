@@ -300,26 +300,73 @@ Det giver:
 
 ---
 
-## Øvelse 5: Kør ikke containere som root
-**Beskrivelse:**
-Forbedr sikkerheden ved at oprette og bruge en ikke-root-bruger i din container.
+# Øvelse 5: Kør ikke containere som root
 
-**Opgaver:**
-1. Opret en bruger i din Dockerfile.
-2. Skift til denne bruger, før applikationen startes.
-3. Byg og kør containeren. Kontroller hvilken bruger, der kører processen.
+## Beskrivelse
+Som standard kører en container som `root`. Det er en sikkerhedsrisiko, fordi et brud i containeren kan give adgang som root på værtsmaskinen.  
+I denne øvelse lærer du at oprette og bruge en ikke-root-bruger i din container.
 
-**Eksempel på Dockerfile med ikke-root bruger:**
+## Læringsmål
+- Forstå hvorfor det er en risiko at køre containere som root.  
+- Oprette en bruger i Dockerfile.  
+- Køre applikationen som denne bruger i stedet for root.  
+
+---
+
+## Dockerfile med ikke-root bruger
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
+
+# Opret en gruppe og en bruger
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+
+# Kopiér kildekoden ind i mappen og skift ejerskab
 COPY . .
+RUN chown -R appuser:appgroup /app
+
+# Skift til ikke-root bruger
+USER appuser
+
 CMD ["node", "server.js"]
 ```
 
-**Diskussion:** Hvorfor er det en sikkerhedsrisiko at køre som root i en container?
+---
+
+## Opgaver
+
+1. Byg Docker-billedet:  
+   ```bash
+   docker build -t caching-demo-nonroot .
+   ```
+
+2. Kør containeren:  
+   ```bash
+   docker run -p 3000:3000 caching-demo-nonroot
+   ```
+
+3. Kontroller hvilken bruger der kører processen:  
+   - Find container-id:  
+     ```bash
+     docker ps
+     ```  
+   - Tjek brugeren:  
+     ```bash
+     docker exec -it <container-id> whoami
+     ```  
+   - Tjek processen:  
+     ```bash
+     docker exec -it <container-id> ps aux
+     ```
+
+---
+
+## Diskussion
+- Hvorfor er det en risiko at køre som root i en container?  
+- Hvordan hjælper det at køre som en dedikeret app-bruger?  
+- Kan man forestille sig situationer, hvor root stadig er nødvendigt?  
+
 
 ---
 
@@ -335,11 +382,11 @@ Brug Docker Scan til at identificere sårbarheder i dit image.
 
 **Kommandoer:**
 ```sh
-# Byg Docker image
-docker build -t myapp .
 
-# Scan image for sårbarheder
-docker scout myapp
+
+# Scan image for sårbarheder 
+docker scout cves nginx
+
 ```
 
 **Diskussion:** Hvordan kan du løse de identificerede sårbarheder?
