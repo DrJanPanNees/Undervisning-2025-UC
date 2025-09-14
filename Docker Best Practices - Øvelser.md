@@ -220,34 +220,83 @@ Brug mappen fra **Øvelse 2** (den lille Node/Express-app med `Dockerfile` der h
 
 ---
 
-## Øvelse 4: Multi-stage build for at optimere image-størrelse
-**Beskrivelse:**
-Brug multi-stage builds til at adskille build-processen fra det endelige image og reducere dets størrelse.
+# Øvelse 4: Multi-stage build for at optimere image-størrelse
 
-**Opgaver:**
-1. Skriv en multi-stage Dockerfile til en Node.js-applikation.
-2. Brug én fase til at bygge kildekoden og en anden til at køre applikationen.
-3. Byg og kør containeren. Sammenlign billedstørrelsen før og efter optimering.
+## Beskrivelse
+I denne øvelse bruger du multi-stage builds til at adskille installation af afhængigheder fra det endelige runtime-image.  
+Formålet er at minimere størrelsen af det image, som du kører i produktion, og kun have det nødvendige med.
 
-**Eksempel på multi-stage build:**
+## Læringsmål
+- Forstå hvordan multi-stage builds fungerer i Docker.  
+- Lære at adskille build-processen (fx installation af pakker) fra runtime.  
+- Kunne sammenligne image-størrelser mellem et simpelt build og et multi-stage build.  
+
+---
+
+## Multi-stage Dockerfile
+
+Opret en fil **`Dockerfile`** med dette indhold:
+
 ```dockerfile
-# Build stage
+# Første stage: installer afhængigheder
 FROM node:18-alpine AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm install
-COPY . .
-RUN npm run build
 
-# Runtime stage
+# Kopiér package-filer og installer afhængigheder
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Kopiér kildekode
+COPY . .
+
+# Andet stage: rent runtime-image
 FROM node:18-alpine
 WORKDIR /app
-COPY --from=builder /app/dist ./dist
+
+# Kopiér kun nødvendige ting fra builder
 COPY --from=builder /app/node_modules ./node_modules
-CMD ["node", "dist/server.js"]
+COPY --from=builder /app/server.js ./server.js
+COPY --from=builder /app/package.json ./package.json
+
+# Start appen
+CMD ["node", "server.js"]
 ```
 
-**Diskussion:** Hvordan reducerer multi-stage builds billedstørrelsen?
+---
+
+## Opgaver
+
+1. Byg Docker-billedet med multi-stage:  
+   ```bash
+   docker build -t caching-demo-multi .
+   ```
+
+2. Sammenlign med det image du lavede i Øvelse 2:  
+   ```bash
+   docker image ls | grep caching-demo
+   ```
+
+3. Kør containeren:  
+   ```bash
+   docker run -p 3000:3000 caching-demo-multi
+   ```
+
+   Tjek [http://localhost:3000](http://localhost:3000) – appen kører som før.
+
+4. Diskutér:  
+   - Hvorfor er runtime-imaget mindre, selvom funktionaliteten er den samme?  
+   - Hvilke filer har vi undgået at tage med i det endelige image?  
+   - Hvordan hjælper dette i en produktion, hvor man måske har mange containere?
+
+---
+
+## Diskussion
+Multi-stage builds gør det muligt at holde runtime-images “rene” – kun det nødvendige til at køre applikationen kommer med.  
+Det giver:  
+- Mindre images → hurtigere deploy.  
+- Mindre angrebsflade → bedre sikkerhed.  
+- Tydelig adskillelse mellem build-miljø og runtime-miljø.  
+
 
 ---
 
