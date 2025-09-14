@@ -1,6 +1,6 @@
-# **Øvelse: Kør en C#-applikation i en Docker-container med MySQL og YAML**
+# Øvelse: Kør en C#-applikation i en Docker-container med MySQL og YAML
 
-## **Mål**
+## Mål
 I denne øvelse vil vi:
 1. Udvikle en simpel C#-konsolapplikation.
 2. Skrive en `Dockerfile` til at bygge og køre applikationen i en container.
@@ -9,7 +9,7 @@ I denne øvelse vil vi:
 
 ---
 
-## **Trin 1: Opret en simpel C#-konsolapplikation**
+## Trin 1: Opret en simpel C#-konsolapplikation
 Start med at oprette en ny C#-konsolapplikation:
 
 ```sh
@@ -19,7 +19,7 @@ dotnet new console -o App
 cd App
 ```
 
-### **Installer MySQL Connector**
+### Installer MySQL Connector
 For at kunne kommunikere med MySQL skal vi installere `MySql.Data` pakken:
 
 ```sh
@@ -36,28 +36,34 @@ class Program
 {
     static void Main(string[] args)
     {
-        string connectionString = "Server=mysql;Database=testdb;User=root;Password=root;";
+        string server = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+        string database = Environment.GetEnvironmentVariable("DB_NAME") ?? "testdb";
+        string user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
+        string password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "root";
+
+        string connectionString = $"Server={server};Database={database};User={user};Password={password};";
+
         using var connection = new MySqlConnection(connectionString);
         connection.Open();
-        
+
         string createTableQuery = "CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, text VARCHAR(255));";
         using var createTableCmd = new MySqlCommand(createTableQuery, connection);
         createTableCmd.ExecuteNonQuery();
-        
+
         Console.Write("Indtast en besked: ");
         string message = Console.ReadLine();
-        
+
         string insertQuery = "INSERT INTO messages (text) VALUES (@message);";
         using var insertCmd = new MySqlCommand(insertQuery, connection);
         insertCmd.Parameters.AddWithValue("@message", message);
         insertCmd.ExecuteNonQuery();
-        
+
         Console.WriteLine("Beskeden er gemt i databasen.");
-        
+
         string selectQuery = "SELECT * FROM messages;";
         using var selectCmd = new MySqlCommand(selectQuery, connection);
         using var reader = selectCmd.ExecuteReader();
-        
+
         Console.WriteLine("\nGemte beskeder:");
         while (reader.Read())
         {
@@ -75,7 +81,7 @@ Koden:
 
 ---
 
-## **Trin 2: Opret en Dockerfile**
+## Trin 2: Opret en Dockerfile
 Opret en fil `Dockerfile` i `App`-mappen med følgende indhold:
 
 ```dockerfile
@@ -95,7 +101,7 @@ CMD ["dotnet", "App.dll"]
 
 ---
 
-## **Trin 3: Opret en `docker-compose.yaml`**
+## Trin 3: Opret en `docker-compose.yaml`
 Opret en `docker-compose.yaml`-fil i roden af projektet:
 
 ```yaml
@@ -114,7 +120,7 @@ services:
       - mysql_data:/var/lib/mysql
     restart: always
 
-  csharp-app:
+  app:
     build: ./App
     depends_on:
       - mysql
@@ -137,24 +143,26 @@ volumes:
 
 ---
 
-## **Trin 4: Byg og kør containeren**
+## Trin 4: Byg og kør containerne
 
 Byg og start hele systemet med:
 
 ```sh
-docker compose run --rm app
+docker compose build
+docker compose up
 ```
 
 Herefter kan du indtaste en besked, som gemmes i MySQL-databasen, og se tidligere gemte beskeder.
 
+> ⚠️ Bemærk: Første gang kan MySQL tage et øjeblik om at starte. Hvis applikationen fejler med "Connection refused", så prøv igen.
+
 ---
 
-## **Bonus-opgaver**
+## Bonus-opgaver
 1. **Udvid applikationen:** Lav en menu, hvor brugeren kan slette eller opdatere beskeder.
 2. **Tilføj en webservice:** Lav en simpel API med ASP.NET Core til at hente og indsende beskeder.
 3. **Tilføj en frontend:** Opret en React eller Vue.js frontend, der viser data fra databasen.
 
 ---
 
-Denne øvelse giver de studerende praktisk erfaring med **C#, Docker, MySQL og YAML**, og de får en forståelse for, hvordan containeriserede applikationer kommunikerer med databaser.
-
+Denne øvelse giver praktisk erfaring med **C#, Docker, MySQL og YAML**, og viser hvordan containeriserede applikationer kan kommunikere med databaser.
