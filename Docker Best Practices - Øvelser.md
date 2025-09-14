@@ -141,7 +141,7 @@ CMD ["node", "server.js"]
 
 ---
 
-# Øvelse 3: Brug af `.dockerignore` for mindre build-context og image
+# Øvelse 3: Brug af `.dockerignore` for mindre build-context og image (IKKE TESTET endnu, prøv gerne men ikke et krav!)
 
 **Formål:** Undgå at sende/indbygge unødvendige filer i dit Docker-image. Det giver hurtigere builds og ofte mindre images.
 
