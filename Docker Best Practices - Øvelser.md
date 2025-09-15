@@ -92,6 +92,8 @@ npm-debug.log
 ---
 HUSK at bygge til sidst:  docker build -t node-app . 
 ---
+HUSK: se lige hvor meget den fylder nu.
+---
 
 **Diskussion:** Hvorfor er `latest` en dårlig praksis? Hvordan påvirker versionering stabiliteten?
 
