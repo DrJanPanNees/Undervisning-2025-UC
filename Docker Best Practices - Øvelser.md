@@ -16,6 +16,10 @@
 ## Øvelse 1: Brug officielle og versionerede billeder
 **Beskrivelse:**
 Denne øvelse fokuserer på at vælge officielle og verificerede Docker-images samt at fastlåse versioner for at sikre stabilitet.
+node-docker-app/
+├── Dockerfile
+├── package.json
+└── server.js
 
 **Opgaver:**
 1. Find et officielt Docker-image til **Node.js** på Docker Hub.
