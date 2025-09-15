@@ -45,6 +45,46 @@ RUN npm install
 CMD ["node", "server.js"]
 ```
 
+Lidt ekstra hjælp: 
+---
+
+## package.json
+
+```json
+{
+  "name": "node-docker-app",
+  "version": "1.0.0",
+  "description": "Simple Node.js app for Docker exercise",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+```
+
+---
+
+## server.js
+
+```js
+const express = require("express");
+const app = express();
+const port = 3000;
+
+app.get("/", (req, res) => {
+  res.send("Hello from Docker + Node.js!");
+});
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
+```
+
+---
+
 **Diskussion:** Hvorfor er `latest` en dårlig praksis? Hvordan påvirker versionering stabiliteten?
 
 ---
