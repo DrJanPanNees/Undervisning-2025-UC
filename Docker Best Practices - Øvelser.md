@@ -84,6 +84,12 @@ app.listen(port, () => {
 ```
 
 ---
+(Ekstra øvelse, ikke påkrævet) Prøv at oprette en .dockerignore med følgende indhold:
+```
+node_modules
+npm-debug.log
+```
+---
 
 **Diskussion:** Hvorfor er `latest` en dårlig praksis? Hvordan påvirker versionering stabiliteten?
 
