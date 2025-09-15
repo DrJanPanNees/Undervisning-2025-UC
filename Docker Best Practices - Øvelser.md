@@ -374,15 +374,28 @@ I denne øvelse lærer du at oprette og bruge en ikke-root-bruger i din containe
 ## Dockerfile med ikke-root bruger
 
 ```dockerfile
+# Første stage: build
+FROM node:18-alpine AS builder
+WORKDIR /app
+
+# Kopiér package-filer og installer dependencies
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Kopiér resten af koden
+COPY . .
+
+# Andet stage: runtime
 FROM node:18-alpine
 WORKDIR /app
 
-# Opret en gruppe og en bruger
+# Opret en ikke-root bruger
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Kopiér kildekoden ind i mappen og skift ejerskab
-COPY . .
-RUN chown -R appuser:appgroup /app
+# Kopiér kun nødvendige ting fra builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/server.js ./server.js
+COPY --from=builder /app/package.json ./package.json
 
 # Skift til ikke-root bruger
 USER appuser
