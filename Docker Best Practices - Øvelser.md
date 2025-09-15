@@ -90,6 +90,8 @@ node_modules
 npm-debug.log
 ```
 ---
+HUSK at bygge til sidst:  docker build -t node-app . 
+---
 
 **Diskussion:** Hvorfor er `latest` en dårlig praksis? Hvordan påvirker versionering stabiliteten?
 
