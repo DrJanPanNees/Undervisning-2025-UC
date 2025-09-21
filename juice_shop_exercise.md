@@ -25,13 +25,11 @@ Følg denne rækkefølge — ellers fanger Burp ikke trafikken korrekt:
 
 1. **Installer Burp Suite** (Community eller Pro) hvis ikke allerede gjort. Download: https://portswigger.net/burp. Installér app'en i `/Applications` på macOS.  
 2. **Start Burp Suite**. Vent til hovedvinduet vises.  
-3. **Tjek Burp Proxy listener:** `Proxy → Options → Proxy listeners` — sørg for en listener på `127.0.0.1:8080` og at den *kører* (Running). Overvej at slå **Support invisible proxying** til hvis I arbejder med lokale hosts.  
-4. **Åbn Burp’s browser fra Burp:** `Proxy → Open browser` (den indbyggede Chromium). Brug denne hvis den virker. **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER** — se alternativ kort nedenfor.  
-5. **I den browser som Burp åbnede (eller i din egen Chrome, hvis du bruger den):** åbn nu `http://localhost:3000`. (Første gang du skal bruge Burp-browseren: gå til `http://burpsuite` for at hente CA-cert, hvis du vil inspicere HTTPS).  
-6. **Gå tilbage til Burp** og sæt `Proxy → Intercept` = ON for at fange requests. Prøv at udføre en handling i Juice Shop (fx login eller søgning) og se at GET og POST requests dukker op i Intercept‑fanen.
+3. **Tjek Burp Proxy listener:** `Proxy → Options → Proxy listeners` — sørg for en listener på `127.0.0.1:8080` og at den *kører* (Running). 
+4. **Gå tilbage til Burp** og sæt `Proxy → Intercept` = ON for at fange requests. Prøv at udføre en handling i Juice Shop (fx login eller søgning) og se at GET og POST requests dukker op i Intercept‑fanen.
 
 > **Gentagelse så de ikke misser det:**  
-> **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER.** Hvis Burp Chromium fejler (fx `ERR_INVALID_REDIRECT`), start i stedet din egen Chrome med proxy-flag (kommando længere nede).
+> **BRUG BURP CHROMIUM HVIS DEN VIRKER.** Hvis Burp Chromium fejler (fx `ERR_INVALID_REDIRECT`), start i stedet din egen Chrome med proxy-flag (kommando længere nede).
 
 ---
 
