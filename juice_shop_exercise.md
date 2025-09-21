@@ -1,4 +1,5 @@
 ---
+
 title: "Juice Shop - PenTest øvelse (Modul 5)"
 purpose: "Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigation."
 prerequisites:
@@ -29,6 +30,7 @@ assessment_criteria:
 safety_ethics:
   - "Arbejd kun mod din lokale Juice Shop-instans"
   - "Ingen scans/angreb mod eksterne/produktions-systemer"
+
 ---
 
 # Juice Shop — Øvelse og Hurtigstart (opdateret med analyse-krav)
