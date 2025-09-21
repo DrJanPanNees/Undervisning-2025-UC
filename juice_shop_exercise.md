@@ -1,59 +1,122 @@
-# Juice Shop - PenTest øvelse (Modul 5)
-
-| Felt | Værdi |
-|---|---|
-| **Title** | Juice Shop - PenTest øvelse (Modul 5) |
-| **Purpose** | Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigering. |
-| **Prerequisites** | Docker installeret og kørende; Burp Suite (Community eller Pro) installeret; Grundlæggende kendskab til HTTP, DevTools og JavaScript |
-| **Duration** | 2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time |
-| **Group size** | 2–3 studerende |
-| **Tools** | Docker, Burp Suite, Browser DevTools (Chrome/Firefox), GitHub/GitLab (valgfrit) |
-| **Learning outcomes** | Identificere og beskrive en web-sårbarhed; Demonstrere exploit; Beskrive mitigations |
-| **Deliverables** | 1 slide deck (max 8 slides); 1 kort live demo (3 min); 1 kort md-fil med PoC |
-| **Assessment criteria** | Valg af sårbarhed 20%; Demonstration 40%; Mitigation 25%; Formidling 15% |
-| **Safety / Ethics** | Arbejd kun mod din lokale Juice Shop-instans; Ingen angreb mod eksterne systemer |
-
+---
+title: "Juice Shop - PenTest øvelse (Modul 5)"
+purpose: "Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigering."
+prerequisites:
+  - Docker installeret og kørende
+  - Burp Suite (Community eller Pro) installeret
+  - Grundlæggende kendskab til HTTP, DevTools og JavaScript
+duration: "2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time"
+group_size: "2–3 studerende"
+tools:
+  - Docker
+  - Burp Suite
+  - Browser DevTools (Chrome/Firefox)
+  - GitHub/GitLab (valgfrit til aflevering)
+learning_outcomes:
+  - Identificere og beskrive en web-sårbarhed i Juice Shop
+  - Demonstrere exploit via DevTools/Burp
+  - Forklare hvordan sårbarheden kan afbødes (kort)
+deliverables:
+  - 1 slide deck (max 8 slides)
+  - 1 kort live demo (3 min) i næste lektion
+  - 1 kort md-fil med PoC steps og referencer
+assessment_criteria:
+  - Valg af sårbarhed og relevans (20%)
+  - Korrekt demonstration/exploit (40%)
+  - Refleksion og mitigering (25%)
+  - Formidling og samarbejde (15%)
+safety_ethics:
+  - Arbejd kun mod din lokale Juice Shop-instans
+  - Ingen scans/angreb mod eksterne/produktions-systemer
 ---
 
-## Juice Shop — Øvelse og Hurtigstart
+# Juice Shop — Øvelse og Hurtigstart (opdateret rækkefølge)
 
-### Læringsmål
+## Læringsmål
 - Forstå og demonstrere en web-sårbarhed i en lokal instans af OWASP Juice Shop.  
 - Fremvise en fungerende proof-of-concept (PoC).  
 - Kort beskrive realistiske mitigationsforslag.
 
 ---
 
-### Hurtigstart — kør Juice Shop lokalt (5 min)
-Kør disse kommandoer i Terminal:
+## Hurtigstart — rækkefølge (vigtigt)
+Følg denne rækkefølge — ellers fanger Burp ikke trafikken korrekt:
+
+1. **Installer Burp Suite** (Community eller Pro) hvis ikke allerede gjort. Download: https://portswigger.net/burp. Installér app'en i `/Applications` på macOS.  
+2. **Start Burp Suite**. Vent til hovedvinduet vises.  
+3. **Tjek Burp Proxy listener**: `Proxy → Options → Proxy listeners` — sørg for at der er en listener på `127.0.0.1:8080` og at den *kører* (Running). Overvej at slå **Support invisible proxying** til hvis I arbejder med lokale hosts.  
+4. **Åbn Burp’s browser fra Burp**: `Proxy → Open browser` (den indbyggede Chromium). Brug denne hvis den virker. **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER** — se alternativ kort nedenfor.  
+5. **I den browser som Burp åbnede (eller i din egen Chrome, hvis du bruger den):** åbn nu `http://localhost:3000`. (Første gang du skal bruge Burp-browseren: gå til `http://burpsuite` for at hente CA-cert, hvis du vil inspicere HTTPS).  
+6. **Gå tilbage til Burp** og sæt `Proxy → Intercept` = ON for at fange requests. Prøv at udføre en handling i Juice Shop (fx login eller søgning) og se at GET og POST requests dukker op i Intercept-fanen.  
+
+> **Gentagelse så de ikke misser det:**  
+> **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER.** Hvis Burp Chromium fejler (fx `ERR_INVALID_REDIRECT`), start i stedet din egen Chrome med proxy-flag (kommando længere nede).
+
+---
+
+## Hvis Burp Chromium driller — hurtig alternativ (én linje)
+Start din egen Chrome som kun denne gang bruger Burp-proxyen:
+```bash
+open -a "Google Chrome" --args --proxy-server="http://127.0.0.1:8080" --user-data-dir="/tmp/chrome-burp"
+```
+
+---
+
+## Hurtigstart — kør Juice Shop lokalt (5 min)
+Kør disse kommandoer i Terminal (før eller efter du har startet Burp — bare sørg for Burp kører før du åbner siden i browseren):
 ```bash
 docker pull bkimminich/juice-shop
 docker run --rm -p 3000:3000 bkimminich/juice-shop
 ```
-Åbn i browser: `http://localhost:3000`
+Når Burp-browseren er åben og Intercept er ON: **ÅBN** `http://localhost:3000` i den Burp-browser eller i din proxied Chrome.
 
 ---
 
-### Burp / browseropsæt (anbefaling til undervisning)
-
-> **VIGTIGT — LÆS FØRST (KORT):**  
-> **BRUG BURP’S INDLEGGEREDE CHROMIUM KUN HVIS DEN VIRKER FOR DIG.**  
-> **HVIS BURP CHROMIUM IKKE VIRKER STABILT, BRUG DIN EGEN CHROME MED PROXY-FLAG I STEDET.**
-
-- Hvis Burp Chromium virker hos dig: brug den (i Burp: *Proxy → Open browser*).  
-- **Hvis Burp Chromium fejler (fx `ERR_INVALID_REDIRECT` eller `ERR_TUNNEL_CONNECTION_FAILED`) — START DIN EGEN CHROME med proxy-flag:**
-  ```bash
-  open -a "Google Chrome" --args --proxy-server="http://127.0.0.1:8080" --user-data-dir="/tmp/chrome-burp"
-  ```
-- I Burp: *Proxy → Options* → sørg for en listener `127.0.0.1:8080` (Running). Overvej at slå **Support invisible proxying** til ved arbejde med lokale hosts.
-- For HTTPS-inspektion: i Burp → *Proxy → Open browser* → gå til `http://burpsuite` → download CA-cert og importer i macOS Keychain som trusted (kun hvis I skal inspicere HTTPS).
-
-**Gentagelse så de ikke misser det:**  
-**BRUG BURP CHROMIUM KUN HVIS DEN VIRKER. ELLERS START DIN EGEN CHROME** — det er ofte den hurtigste løsning for undervisning.
+## Intercept-test (hurtig)
+- Sæt `Proxy → Intercept = On` i Burp.  
+- Udfør en simpel handling i Juice Shop (fx åbn produktliste eller klik login).  
+- Du skal nu se en HTTP-request i Burp Intercept-fanen. Prøv at Forward eller Drop requesten og se effekten.  
+- Skift Intercept Off og brug Repeater/Logger for at afspille eller inspicere trafik.
 
 ---
 
-### Valg af emne (eksempler)
+## Kort oversigt: HTTP-metoder (hurtig reference)
+Her er en kort, pædagogisk oversigt du kan give de studerende som cheat-sheet:
+
+- **GET**  
+  - Formål: Hent ressourcer/data fra serveren.  
+  - Karakteristika: Idempotent, ingen body typisk, parametre i URL (query string).  
+  - Eksempel: `GET /products?search=soap HTTP/1.1`
+
+- **POST**  
+  - Formål: Send data til serveren for at oprette eller ændre ressourcer (fx formularindsendelse).  
+  - Karakteristika: Ikke-idempotent (gentagne POST kan oprette flere ressourcer), indhold i body (JSON, form-data).  
+  - Eksempel: `POST /login` med body `{ "username":"alice","password":"x" }`
+
+- **PUT**  
+  - Formål: Erstat en ressource fuldstændigt (opdatering).  
+  - Karakteristika: Idempotent (gentagne PUT med samme body giver samme tilstand).  
+  - Eksempel: `PUT /users/123` med body med alle felter.
+
+- **PATCH**  
+  - Formål: Delvis opdatering af en ressource.  
+  - Karakteristika: Ikke nødvendigvis idempotent, bruges til ændringer af enkelte felter.
+
+- **DELETE**  
+  - Formål: Slet en ressource.  
+  - Karakteristika: Idempotent (sletning af en allerede slettet ressource bør ikke ændre tilstand).
+
+- **HEAD**  
+  - Formål: Ligesom GET men kun returnerer headers (ingen body). God til at tjekke om en ressource findes eller content-length.
+
+- **OPTIONS**  
+  - Formål: Spørger server hvilke metoder og features en ressource understøtter (CORS preflight osv).
+
+**Hvor det er relevant i øvelsen:** brug GET til at inspicere endpoints og POST/PUT/PATCH/DELETE når I tester input-validering, login eller state-changing funktioner.
+
+---
+
+## Valg af emne (eksempler)
 - Reflected / Stored / DOM XSS  
 - SQL Injection (login, search)  
 - Authorization bypass / JWT manipulation  
@@ -61,7 +124,7 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-### Arbejdsgang (forslag)
+## Arbejdsgang (forslag)
 - 0–10 min: Recon med DevTools (Network, Elements, Console). Find endpoints og inputs.  
 - 10–30 min: Simpel PoC via DevTools / Burp Repeater (fx payload for XSS).  
 - 30–45 min: Beskriv mitigation: hvad skal ændres i kode/config.  
@@ -69,31 +132,21 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-### Aflevering (format og krav)
+## Aflevering (format og krav)
 - Upload én .zip med: `slides.pdf` (max 8 slides), `poc.md` (trin-for-trin), evt. 2–3 screenshots.  
 - I klassen: 3 min live demo + 2 min Q&A.  
 - Deadline: næste lektion (eller angivet ved opgaveudlevering).
 
 ---
 
-### Etiske regler
+## Etiske regler
 - Angrib kun din lokale Juice Shop-instans.  
 - Ingen scanning eller angreb mod eksterne/produktionssystemer.  
 - Del ikke payloads som kan misbruges uden kontekst/etisk ansvar.
 
 ---
 
-## Bedømmelse (kort rubrik)
-- **Valg af sårbarhed (20%)**: Relevans og begrundelse.  
-- **Demonstration (40%)**: Fungerende PoC og forklaring.  
-- **Mitigation (25%)**: Realistiske, korrekte forslag.  
-- **Formidling (15%)**: Klar præsentation og samarbejde.
-
----
-
 ## Troubleshooting — vitale kommandoer (til slide)
-Sæt disse på en "quick fixes" slide; de hjælper de fleste fra start:
-
 ```bash
 # Hvad lytter på port 8080?
 lsof -nP -iTCP:8080 -sTCP:LISTEN
@@ -111,8 +164,6 @@ curl -v http://127.0.0.1:3000/ 2>&1 | head -n 10
 docker ps --filter "publish=8080" --format "table {{.ID}}\t{{.Image}}\t{{.Ports}}"
 docker stop <container-id>
 ```
-
-**Tip:** Hvis en Docker container bruger port 8080, stop den, eller skift Burp til en anden port. Port-konflikter er en almindelig årsag til fejl i Burp Chromium.
 
 ---
 
