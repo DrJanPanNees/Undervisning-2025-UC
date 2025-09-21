@@ -7,7 +7,7 @@
 **Group size:** 2–3 studerende.  
 **Tools:** Docker, Burp Suite, Browser DevTools (Chrome/Firefox), GitHub/GitLab (valgfrit).  
 **Learning outcomes:** Identificere og beskrive en web-sårbarhed; Demonstrere exploit; Beskrive mitigations.  
-**Deliverables:** slides.pdf (max 8 slides), poc.md (trin-for-trin), kort live demo (3 min).  
+**Deliverables:** slides.pdf (max 8 slides), poc.md (trin-for-trin), kort live demo (3-10 min).  
 **Assessment criteria:** Valg af sårbarhed 20%; Demonstration 40%; Mitigation 25%; Formidling 15%.  
 **Safety/Ethics:** Arbejd kun mod lokal Juice Shop; ingen angreb mod eksterne systemer.
 
@@ -90,7 +90,7 @@ Når Burp-browseren er åben og Intercept er ON: **ÅBN** `http://localhost:3000
 
 ## Aflevering (format og krav)
 - Upload én .zip med: `slides.pdf` (max 8 slides), `poc.md` (trin‑for‑trin), evt. 2–3 screenshots.  
-- I klassen: 3 min live demo + 2 min Q&A.  
+- I klassen: 3-10 min live demo + 2 min Q&A.  
 - Deadline: næste lektion (eller angivet ved opgaveudlevering).
 
 ---
