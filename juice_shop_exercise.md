@@ -65,8 +65,8 @@ Følg denne rækkefølge — ellers fanger Burp ikke trafikken korrekt:
 
 ---
 
-## Krav til aflevering — `poc_analysis.md` (skabelon)
-Jeres upload skal indeholde en `poc_analysis.md` med følgende sektioner — brug dette som skabelon og udfyld præcist:
+## Krav til aflevering (skabelon)
+Jeres upload skal indeholde en file med følgende sektioner — brug dette som skabelon og udfyld præcist:
 
 ```markdown
 # Titel på PoC / Analyse
