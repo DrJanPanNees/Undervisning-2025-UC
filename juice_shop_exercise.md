@@ -121,8 +121,8 @@ docker stop <container-id>
 
 ---
 
-## Skabelon: `poc.md` (til studerende)
-Studerende skal bruge denne skabelon ved upload:
+## Skabelon:
+I skal bruge denne skabelon ved upload:
 
 ```markdown
 # Titel på PoC
@@ -151,19 +151,3 @@ Studerende skal bruge denne skabelon ved upload:
 - Links til OWASP, Juice Shop docs eller relevante artikler.
 ```
 
----
-
-## Checklist til underviseren (print/slide)
-- [ ] Docker + Juice Shop OK på maskinerne  
-- [ ] Burp listener kører på 127.0.0.1:8080 (eller alternativ port)  
-- [ ] **Burp Chromium: virker? BRUG KUN HVIS DEN VIRKER — ELLERS START EGEN CHROME MED PROXY**  
-- [ ] CA-cert importeret hvis I skal inspecte HTTPS  
-- [ ] Etik/guidelines gennemgået
-
----
-
-## Ekstra tips til undervisningen
-- Del grupperne på forskelligt område, undgå overlap.  
-- Hav 1–2 hjælpere klar til at hjælpe med Burp/port og Docker-fejl i starten.  
-- Bed grupperne dokumentere hvad de *prøvede* (ikke kun hvad der virkede) — læring ligger i fejlsøgningen.  
-- Overvej at give en kort demo fra underviserens maskine først (5 min), så eleverne ser forventet setup.
