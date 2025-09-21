@@ -5,8 +5,8 @@ prerequisites:
   - Docker installeret og kørende
   - Burp Suite (Community eller Pro) installeret
   - Grundlæggende kendskab til HTTP, DevTools og JavaScript
-duration: "2 lektioner (2x90min) eller 1 projektlektion + demo i næste time"
-group_size: "2-3 studerende"
+duration: "2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time"
+group_size: "2–3 studerende"
 tools:
   - Docker
   - Burp Suite
@@ -30,15 +30,17 @@ safety_ethics:
   - Ingen scans/angreb mod eksterne/produktions-systemer
 ---
 
-# Juice Shop — øvelse og Hurtigstart
+# Juice Shop — Øvelse og Hurtigstart
 
 ## Læringsmål
-- Forstå og demonstrere en web-sårbarhed i en lokal instans af OWASP Juice Shop.
-- Fremvise en fungerende proof-of-concept (PoC).
+- Forstå og demonstrere en web-sårbarhed i en lokal instans af OWASP Juice Shop.  
+- Fremvise en fungerende proof-of-concept (PoC).  
 - Kort beskrive realistiske mitigationsforslag.
 
+---
+
 ## Hurtigstart — kør Juice Shop lokalt (5 min)
-1. Pull og start Juice Shop:
-   ```bash
-   docker pull bkimminich/juice-shop
-   docker run --rm -p 3000:3000 bkimminich/juice-shop
+Kør disse kommandoer i Terminal:
+```bash
+docker pull bkimminich/juice-shop
+docker run --rm -p 3000:3000 bkimminich/juice-shop
