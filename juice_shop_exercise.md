@@ -30,11 +30,24 @@ safety_ethics:
   - Ingen scans/angreb mod eksterne/produktions-systemer
 ---
 
-# Juice Shop — Øvelse og Hurtigstart (opdateret rækkefølge)
+# Juice Shop — Øvelse og Hurtigstart (rettet metadata-visning)
+
+**Title:** Juice Shop - PenTest øvelse (Modul 5)  
+**Purpose:** Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigering.  
+**Prerequisites:** Docker installeret og kørende; Burp Suite (Community eller Pro) installeret; Grundlæggende kendskab til HTTP, DevTools og JavaScript.  
+**Duration:** 2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time.  
+**Group size:** 2–3 studerende.  
+**Tools:** Docker, Burp Suite, Browser DevTools (Chrome/Firefox), GitHub/GitLab (valgfrit).  
+**Learning outcomes:** Identificere og beskrive en web-sårbarhed; Demonstrere exploit; Beskrive mitigations.  
+**Deliverables:** slides.pdf (max 8 slides), poc.md (trin-for-trin), kort live demo (3 min).  
+**Assessment criteria:** Valg af sårbarhed 20%; Demonstration 40%; Mitigation 25%; Formidling 15%.  
+**Safety/Ethics:** Arbejd kun mod lokal Juice Shop; ingen angreb mod eksterne systemer.
+
+---
 
 ## Læringsmål
 - Forstå og demonstrere en web-sårbarhed i en lokal instans af OWASP Juice Shop.  
-- Fremvise en fungerende proof-of-concept (PoC).  
+- Fremvise en fungerende proof‑of‑concept (PoC).  
 - Kort beskrive realistiske mitigationsforslag.
 
 ---
@@ -44,10 +57,10 @@ Følg denne rækkefølge — ellers fanger Burp ikke trafikken korrekt:
 
 1. **Installer Burp Suite** (Community eller Pro) hvis ikke allerede gjort. Download: https://portswigger.net/burp. Installér app'en i `/Applications` på macOS.  
 2. **Start Burp Suite**. Vent til hovedvinduet vises.  
-3. **Tjek Burp Proxy listener**: `Proxy → Options → Proxy listeners` — sørg for at der er en listener på `127.0.0.1:8080` og at den *kører* (Running). Overvej at slå **Support invisible proxying** til hvis I arbejder med lokale hosts.  
-4. **Åbn Burp’s browser fra Burp**: `Proxy → Open browser` (den indbyggede Chromium). Brug denne hvis den virker. **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER** — se alternativ kort nedenfor.  
+3. **Tjek Burp Proxy listener:** `Proxy → Options → Proxy listeners` — sørg for en listener på `127.0.0.1:8080` og at den *kører* (Running). Overvej at slå **Support invisible proxying** til hvis I arbejder med lokale hosts.  
+4. **Åbn Burp’s browser fra Burp:** `Proxy → Open browser` (den indbyggede Chromium). Brug denne hvis den virker. **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER** — se alternativ kort nedenfor.  
 5. **I den browser som Burp åbnede (eller i din egen Chrome, hvis du bruger den):** åbn nu `http://localhost:3000`. (Første gang du skal bruge Burp-browseren: gå til `http://burpsuite` for at hente CA-cert, hvis du vil inspicere HTTPS).  
-6. **Gå tilbage til Burp** og sæt `Proxy → Intercept` = ON for at fange requests. Prøv at udføre en handling i Juice Shop (fx login eller søgning) og se at GET og POST requests dukker op i Intercept-fanen.  
+6. **Gå tilbage til Burp** og sæt `Proxy → Intercept` = ON for at fange requests. Prøv at udføre en handling i Juice Shop (fx login eller søgning) og se at GET og POST requests dukker op i Intercept‑fanen.
 
 > **Gentagelse så de ikke misser det:**  
 > **BRUG BURP CHROMIUM KUN HVIS DEN VIRKER.** Hvis Burp Chromium fejler (fx `ERR_INVALID_REDIRECT`), start i stedet din egen Chrome med proxy-flag (kommando længere nede).
@@ -72,47 +85,22 @@ Når Burp-browseren er åben og Intercept er ON: **ÅBN** `http://localhost:3000
 
 ---
 
-## Intercept-test (hurtig)
+## Intercept‑test (hurtig)
 - Sæt `Proxy → Intercept = On` i Burp.  
 - Udfør en simpel handling i Juice Shop (fx åbn produktliste eller klik login).  
-- Du skal nu se en HTTP-request i Burp Intercept-fanen. Prøv at Forward eller Drop requesten og se effekten.  
+- Du skal nu se en HTTP‑request i Burp Intercept‑fanen. Prøv at Forward eller Drop requesten og se effekten.  
 - Skift Intercept Off og brug Repeater/Logger for at afspille eller inspicere trafik.
 
 ---
 
-## Kort oversigt: HTTP-metoder (hurtig reference)
-Her er en kort, pædagogisk oversigt du kan give de studerende som cheat-sheet:
-
-- **GET**  
-  - Formål: Hent ressourcer/data fra serveren.  
-  - Karakteristika: Idempotent, ingen body typisk, parametre i URL (query string).  
-  - Eksempel: `GET /products?search=soap HTTP/1.1`
-
-- **POST**  
-  - Formål: Send data til serveren for at oprette eller ændre ressourcer (fx formularindsendelse).  
-  - Karakteristika: Ikke-idempotent (gentagne POST kan oprette flere ressourcer), indhold i body (JSON, form-data).  
-  - Eksempel: `POST /login` med body `{ "username":"alice","password":"x" }`
-
-- **PUT**  
-  - Formål: Erstat en ressource fuldstændigt (opdatering).  
-  - Karakteristika: Idempotent (gentagne PUT med samme body giver samme tilstand).  
-  - Eksempel: `PUT /users/123` med body med alle felter.
-
-- **PATCH**  
-  - Formål: Delvis opdatering af en ressource.  
-  - Karakteristika: Ikke nødvendigvis idempotent, bruges til ændringer af enkelte felter.
-
-- **DELETE**  
-  - Formål: Slet en ressource.  
-  - Karakteristika: Idempotent (sletning af en allerede slettet ressource bør ikke ændre tilstand).
-
-- **HEAD**  
-  - Formål: Ligesom GET men kun returnerer headers (ingen body). God til at tjekke om en ressource findes eller content-length.
-
-- **OPTIONS**  
-  - Formål: Spørger server hvilke metoder og features en ressource understøtter (CORS preflight osv).
-
-**Hvor det er relevant i øvelsen:** brug GET til at inspicere endpoints og POST/PUT/PATCH/DELETE når I tester input-validering, login eller state-changing funktioner.
+## Kort oversigt: HTTP‑metoder (cheat‑sheet)
+**GET** — Hent ressourcer/data fra serveren. Idempotent. Parametre i URL (query).  
+**POST** — Send data for at oprette/ændre ressourcer. Ikke‑idempotent. Body indeholder data (JSON/form).  
+**PUT** — Erstat en ressource fuldstændigt. Idempotent.  
+**PATCH** — Delvis opdatering af en ressource.  
+**DELETE** — Slet en ressource. Idempotent.  
+**HEAD** — Som GET, men kun headers.  
+**OPTIONS** — Spørg server hvilke metoder/features en resource understøtter (CORS preflight).
 
 ---
 
@@ -133,14 +121,14 @@ Her er en kort, pædagogisk oversigt du kan give de studerende som cheat-sheet:
 ---
 
 ## Aflevering (format og krav)
-- Upload én .zip med: `slides.pdf` (max 8 slides), `poc.md` (trin-for-trin), evt. 2–3 screenshots.  
+- Upload én .zip med: `slides.pdf` (max 8 slides), `poc.md` (trin‑for‑trin), evt. 2–3 screenshots.  
 - I klassen: 3 min live demo + 2 min Q&A.  
 - Deadline: næste lektion (eller angivet ved opgaveudlevering).
 
 ---
 
 ## Etiske regler
-- Angrib kun din lokale Juice Shop-instans.  
+- Angrib kun din lokale Juice Shop‑instans.  
 - Ingen scanning eller angreb mod eksterne/produktionssystemer.  
 - Del ikke payloads som kan misbruges uden kontekst/etisk ansvar.
 
