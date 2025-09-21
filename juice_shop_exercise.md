@@ -1,45 +1,30 @@
----
-title: "Juice Shop - PenTest øvelse (Modul 5)"
-purpose: "Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigering."
-prerequisites:
-  - Docker installeret og kørende
-  - Burp Suite (Community eller Pro) installeret
-  - Grundlæggende kendskab til HTTP, DevTools og JavaScript
-duration: "2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time"
-group_size: "2–3 studerende"
-tools:
-  - Docker
-  - Burp Suite
-  - Browser DevTools (Chrome/Firefox)
-  - GitHub/GitLab (valgfrit til aflevering)
-learning_outcomes:
-  - Identificere og beskrive en web-sårbarhed i Juice Shop
-  - Demonstrere exploit via DevTools/Burp
-  - Forklare hvordan sårbarheden kan afbødes (kort)
-deliverables:
-  - 1 slide deck (max 8 slides)
-  - 1 kort live demo (3 min) i næste lektion
-  - 1 kort md-fil med PoC steps og referencer
-assessment_criteria:
-  - Valg af sårbarhed og relevans (20%)
-  - Korrekt demonstration/exploit (40%)
-  - Refleksion og mitigering (25%)
-  - Formidling og samarbejde (15%)
-safety_ethics:
-  - Arbejd kun mod din lokale Juice Shop-instans
-  - Ingen scans/angreb mod eksterne/produktions-systemer
+# Juice Shop - PenTest øvelse (Modul 5)
+
+| Felt | Værdi |
+|---|---|
+| **Title** | Juice Shop - PenTest øvelse (Modul 5) |
+| **Purpose** | Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigering. |
+| **Prerequisites** | Docker installeret og kørende; Burp Suite (Community eller Pro) installeret; Grundlæggende kendskab til HTTP, DevTools og JavaScript |
+| **Duration** | 2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time |
+| **Group size** | 2–3 studerende |
+| **Tools** | Docker, Burp Suite, Browser DevTools (Chrome/Firefox), GitHub/GitLab (valgfrit) |
+| **Learning outcomes** | Identificere og beskrive en web-sårbarhed; Demonstrere exploit; Beskrive mitigations |
+| **Deliverables** | 1 slide deck (max 8 slides); 1 kort live demo (3 min); 1 kort md-fil med PoC |
+| **Assessment criteria** | Valg af sårbarhed 20%; Demonstration 40%; Mitigation 25%; Formidling 15% |
+| **Safety / Ethics** | Arbejd kun mod din lokale Juice Shop-instans; Ingen angreb mod eksterne systemer |
+
 ---
 
-# Juice Shop — Øvelse og Hurtigstart
+## Juice Shop — Øvelse og Hurtigstart
 
-## Læringsmål
+### Læringsmål
 - Forstå og demonstrere en web-sårbarhed i en lokal instans af OWASP Juice Shop.  
 - Fremvise en fungerende proof-of-concept (PoC).  
 - Kort beskrive realistiske mitigationsforslag.
 
 ---
 
-## Hurtigstart — kør Juice Shop lokalt (5 min)
+### Hurtigstart — kør Juice Shop lokalt (5 min)
 Kør disse kommandoer i Terminal:
 ```bash
 docker pull bkimminich/juice-shop
@@ -49,7 +34,7 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-## Burp / browseropsæt (anbefaling til undervisning)
+### Burp / browseropsæt (anbefaling til undervisning)
 
 > **VIGTIGT — LÆS FØRST (KORT):**  
 > **BRUG BURP’S INDLEGGEREDE CHROMIUM KUN HVIS DEN VIRKER FOR DIG.**  
@@ -68,7 +53,7 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-## Valg af emne (eksempler)
+### Valg af emne (eksempler)
 - Reflected / Stored / DOM XSS  
 - SQL Injection (login, search)  
 - Authorization bypass / JWT manipulation  
@@ -76,7 +61,7 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-## Arbejdsgang (forslag)
+### Arbejdsgang (forslag)
 - 0–10 min: Recon med DevTools (Network, Elements, Console). Find endpoints og inputs.  
 - 10–30 min: Simpel PoC via DevTools / Burp Repeater (fx payload for XSS).  
 - 30–45 min: Beskriv mitigation: hvad skal ændres i kode/config.  
@@ -84,21 +69,21 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-## Aflevering (format og krav)
+### Aflevering (format og krav)
 - Upload én .zip med: `slides.pdf` (max 8 slides), `poc.md` (trin-for-trin), evt. 2–3 screenshots.  
 - I klassen: 3 min live demo + 2 min Q&A.  
 - Deadline: næste lektion (eller angivet ved opgaveudlevering).
 
 ---
 
-## Etiske regler
+### Etiske regler
 - Angrib kun din lokale Juice Shop-instans.  
 - Ingen scanning eller angreb mod eksterne/produktionssystemer.  
 - Del ikke payloads som kan misbruges uden kontekst/etisk ansvar.
 
 ---
 
-# Bedømmelse (kort rubrik)
+## Bedømmelse (kort rubrik)
 - **Valg af sårbarhed (20%)**: Relevans og begrundelse.  
 - **Demonstration (40%)**: Fungerende PoC og forklaring.  
 - **Mitigation (25%)**: Realistiske, korrekte forslag.  
@@ -106,7 +91,7 @@ docker run --rm -p 3000:3000 bkimminich/juice-shop
 
 ---
 
-# Troubleshooting — vitale kommandoer (til slide)
+## Troubleshooting — vitale kommandoer (til slide)
 Sæt disse på en "quick fixes" slide; de hjælper de fleste fra start:
 
 ```bash
@@ -131,7 +116,7 @@ docker stop <container-id>
 
 ---
 
-# Skabelon: `poc.md` (til studerende)
+## Skabelon: `poc.md` (til studerende)
 Studerende skal bruge denne skabelon ved upload:
 
 ```markdown
@@ -163,7 +148,7 @@ Studerende skal bruge denne skabelon ved upload:
 
 ---
 
-# Checklist til underviseren (print/slide)
+## Checklist til underviseren (print/slide)
 - [ ] Docker + Juice Shop OK på maskinerne  
 - [ ] Burp listener kører på 127.0.0.1:8080 (eller alternativ port)  
 - [ ] **Burp Chromium: virker? BRUG KUN HVIS DEN VIRKER — ELLERS START EGEN CHROME MED PROXY**  
@@ -172,7 +157,7 @@ Studerende skal bruge denne skabelon ved upload:
 
 ---
 
-# Ekstra tips til undervisningen
+## Ekstra tips til undervisningen
 - Del grupperne på forskelligt område, undgå overlap.  
 - Hav 1–2 hjælpere klar til at hjælpe med Burp/port og Docker-fejl i starten.  
 - Bed grupperne dokumentere hvad de *prøvede* (ikke kun hvad der virkede) — læring ligger i fejlsøgningen.  
