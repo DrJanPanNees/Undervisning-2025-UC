@@ -62,9 +62,9 @@ Når Burp-browseren er åben og Intercept er ON: **ÅBN** `http://localhost:3000
 ## Kort oversigt: HTTP‑metoder (cheat‑sheet)
 **GET** — Hent ressourcer/data fra serveren. Idempotent. Parametre i URL (query).  
 **POST** — Send data for at oprette/ændre ressourcer. Ikke‑idempotent. Body indeholder data (JSON/form).  
-**PUT** — Erstat en ressource fuldstændigt. Idempotent.  
+**PUT** — Erstat en ressource fuldstændigt. 
 **PATCH** — Delvis opdatering af en ressource.  
-**DELETE** — Slet en ressource. Idempotent.  
+**DELETE** — Slet en ressource. 
 **HEAD** — Som GET, men kun headers.  
 **OPTIONS** — Spørg server hvilke metoder/features en resource understøtter (CORS preflight).
 
