@@ -1,13 +1,13 @@
 ---
 
-title: "Juice Shop - PenTest øvelse (Modul 5)"
-purpose: "Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigation."
+title: Juice Shop - PenTest øvelse (Modul 5)
+purpose: Træne praktisk web-sårbarhedsanalyse ved at lade grupper vælge et område i OWASP Juice Shop (fx XSS, SQLi, Auth bypass) og demonstrere et fungerende exploit + mitigation.
 prerequisites:
-  - "Docker installeret og kørende"
-  - "Burp Suite (Community eller Pro) installeret"
-  - "Grundlæggende kendskab til HTTP, DevTools og JavaScript"
-duration: "2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time"
-group_size: "2–3 studerende"
+  - Docker installeret og kørende
+  - Burp Suite (Community eller Pro) installeret
+  - Grundlæggende kendskab til HTTP, DevTools og JavaScript
+duration: 2 lektioner (2x90 min) eller 1 projektlektion + demo i næste time
+group_size: 2–3 studerende
 tools:
   - "Docker"
   - "Burp Suite"
