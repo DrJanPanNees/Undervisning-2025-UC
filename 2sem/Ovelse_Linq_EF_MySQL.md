@@ -9,7 +9,7 @@
 
 ---
 
-## 📂 Filstruktur
+## 📂 Filstruktur (baseret på Docker)
 
 ```
 linq-ef-mysql-demo/
