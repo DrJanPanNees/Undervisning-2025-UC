@@ -164,12 +164,16 @@ public class DemoContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connString = "server=localhost;port=4000;database=demo;user=root;password=demopass";
-        optionsBuilder.UseMySql(connString, ServerVersion.AutoDetect(connString));
+        var conn = "server=localhost;port=4000;database=demo;user=root;password=demopass";
+        optionsBuilder.UseMySql(conn, ServerVersion.AutoDetect(conn));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Kunde>().ToTable("Kunde");
+        modelBuilder.Entity<Produkt>().ToTable("Produkt");
+        modelBuilder.Entity<Ordre>().ToTable("Ordre");
+
         modelBuilder.Entity<Ordre>()
             .HasOne(o => o.Kunde)
             .WithMany()
@@ -181,6 +185,7 @@ public class DemoContext : DbContext
             .HasForeignKey(o => o.ProduktId);
     }
 }
+
 ```
 
 ---
@@ -191,6 +196,8 @@ public class DemoContext : DbContext
 ```csharp
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore; // Denne manglede
+using Microsoft.EntityFrameworkCore.Infrastructure; // Denne manglede
 
 class Program
 {
@@ -198,11 +205,15 @@ class Program
     {
         using var db = new DemoContext();
 
+        // Sikrer at EF kan forbinde (opretter ikke tabeller, da du har init.sql)
+        Console.WriteLine("Forbinder til MySQL...");
+        Console.WriteLine(db.Database.GetConnectionString()); // denne skulle ændres.
+        Console.WriteLine("OK!\n");
+
         bool kører = true;
         while (kører)
         {
-            Console.WriteLine("
-=== MENU ===");
+            Console.WriteLine("=== MENU ===");
             Console.WriteLine("1) Se alle kunder");
             Console.WriteLine("2) Se alle ordrer");
             Console.WriteLine("3) Se alle produkter");
@@ -214,85 +225,68 @@ class Program
 
             switch (valg)
             {
-                case "1":
-                    VisKunder(db);
-                    break;
-                case "2":
-                    VisOrdrer(db);
-                    break;
-                case "3":
-                    VisProdukter(db);
-                    break;
-                case "4":
-                    TilføjProdukt(db);
-                    break;
-                case "0":
-                    kører = false;
-                    break;
-                default:
-                    Console.WriteLine("❌ Ugyldigt valg. Prøv igen.");
-                    break;
+                case "1": VisKunder(db); break;
+                case "2": VisOrdrer(db); break;
+                case "3": VisProdukter(db); break;
+                case "4": TilføjProdukt(db); break;
+                case "0": kører = false; break;
+                default: Console.WriteLine("❌ Ugyldigt valg.\n"); break;
             }
         }
     }
 
     static void VisKunder(DemoContext db)
     {
-        Console.WriteLine("
-=== Alle kunder ===");
-        foreach (var k in db.Kunder)
-        {
-            Console.WriteLine($"{k.Id}: {k.Navn}, Alder {k.Alder}");
-        }
+        Console.WriteLine("\n=== Alle kunder ===");
+        var kunder = db.Kunder.ToList();
+        foreach (var k in kunder)
+            Console.WriteLine($"{k.Id}: {k.Navn} ({k.Alder} år)");
+        Console.WriteLine();
     }
 
     static void VisOrdrer(DemoContext db)
     {
-        Console.WriteLine("
-=== Ordrer med kunde og produkt ===");
+        Console.WriteLine("\n=== Ordrer med kunde og produkt ===");
         var ordrer = from o in db.Ordrer
                      join k in db.Kunder on o.KundeId equals k.Id
                      join p in db.Produkter on o.ProduktId equals p.Id
                      select new { Kunde = k.Navn, Produkt = p.Navn, o.Antal };
 
         foreach (var o in ordrer)
-        {
             Console.WriteLine($"{o.Kunde} køber {o.Antal} x {o.Produkt}");
-        }
+        Console.WriteLine();
     }
 
     static void VisProdukter(DemoContext db)
     {
-        Console.WriteLine("
-=== Produkter ===");
-        foreach (var p in db.Produkter)
-        {
+        Console.WriteLine("\n=== Produkter ===");
+        var produkter = db.Produkter.ToList();
+        foreach (var p in produkter)
             Console.WriteLine($"{p.Id}: {p.Navn} - {p.Pris} kr");
-        }
+        Console.WriteLine();
     }
 
     static void TilføjProdukt(DemoContext db)
     {
-        Console.WriteLine("
-=== Tilføj nyt produkt ===");
-        Console.Write("Indtast produktnavn: ");
-        string navn = Console.ReadLine();
+        Console.WriteLine("\n=== Tilføj nyt produkt ===");
+        Console.Write("Navn: ");
+        string navn = Console.ReadLine() ?? "";
 
-        Console.Write("Indtast pris: ");
+        Console.Write("Pris: ");
         if (decimal.TryParse(Console.ReadLine(), out decimal pris))
         {
             var nytProdukt = new Produkt { Navn = navn, Pris = pris };
             db.Produkter.Add(nytProdukt);
             db.SaveChanges();
-
-            Console.WriteLine($"✅ Produkt '{nytProdukt.Navn}' tilføjet med Id={nytProdukt.Id} og pris {nytProdukt.Pris} kr.");
+            Console.WriteLine($"✅ '{nytProdukt.Navn}' tilføjet (pris {nytProdukt.Pris} kr).\n");
         }
         else
         {
-            Console.WriteLine("❌ Ugyldig pris. Produktet blev ikke gemt.");
+            Console.WriteLine("❌ Ugyldig pris.\n");
         }
     }
 }
+
 ```
 
 ---
