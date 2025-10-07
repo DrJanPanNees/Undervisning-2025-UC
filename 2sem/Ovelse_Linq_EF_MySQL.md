@@ -1,4 +1,4 @@
-# Øvelse: LINQ + EF Core + MySQL i Docker (Console App med Menu)
+# Øvelse: LINQ + EF Core + Database (Enten Docker eller MSSQL Server)
 
 ## 🎯 Læringsmål
 - Opsætte en **database**.  
