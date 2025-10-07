@@ -1,8 +1,8 @@
 # Øvelse: LINQ + EF Core + MySQL i Docker (Console App med Menu)
 
 ## 🎯 Læringsmål
-- Opsætte en **MySQL database** i Docker ved hjælp af `docker-compose` og `init.sql`.  
-- Forstå hvordan **Entity Framework Core** kan forbinde C# til en MySQL database.  
+- Opsætte en **database**.  
+- Forstå hvordan **Entity Framework Core** kan forbinde C# til en database.  
 - Bruge **LINQ** til at forespørge og manipulere data.  
 - Bygge en **menu-baseret console app**, der kan vise kunder, produkter, ordrer og tilføje nye produkter.  
 - Reflektere over hvordan man selv kan **udvide applikationen** med CRUD-funktioner (oprette/slette kunder og produkter).  
@@ -30,7 +30,7 @@ linq-ef-mysql-demo/
 
 ---
 
-## 1. Database med Docker Compose
+## 1. Database med Docker Compose (Hvis I vælger at bruge Docker, ellers brug MSSQL SERVER)
 
 **Hvorfor:** Vi bruger Docker for at have en ensartet database, alle kan starte med ét command.  
 
