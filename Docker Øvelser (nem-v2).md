@@ -232,6 +232,8 @@ http://localhost:3000
 2. Start en container med volumen:
    ```bash
    docker run -d --name vol-container -v my-volume:/data alpine sleep 600
+   Den starter en container i baggrunden (-d) med navnet vol-container. Den monterer et Docker‑volume, der hedder my-volume, ind i containerens mappe /data. Det betyder, at alt hvad containeren læser/skriver i /data, ender i det vedvarende volume. Containeren bruger image’et alpine, og den kører kommandoen sleep 600, altså den sover i 600 sekunder og afslutter derefter.
+Containeren eksisterer kun i 10 minutter, men alt i /data overlever, fordi det ligger i et Docker‑volume uden for containerens livscyklus.
    ```
 3. Bekræft, at volumen eksisterer:
    ```bash
