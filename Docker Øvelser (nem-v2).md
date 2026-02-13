@@ -199,6 +199,10 @@ God fornøjelse med Docker! 🚀
 2. Start tjenesten:
    ```bash
    docker compose up -d
+   Åbn din browser og gå til:
+```
+http://localhost:3000
+```
    ```
 3. Bekræft, at tjenesten kører:
    ```bash
