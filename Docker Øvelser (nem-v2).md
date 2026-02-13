@@ -164,7 +164,7 @@ For at stoppe containeren:
 CTRL + C
 ```
 
-For at slette containeren:
+For at slette ALLE container:
 ```sh
 docker rm $(docker ps -a -q) -f
 ```
