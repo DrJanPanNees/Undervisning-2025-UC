@@ -227,7 +227,7 @@ docker compose up --build
 ```Shell
 http://localhost:4000/api/booking
 ```
-
+Prøv at refresh og se at den ændre adressen.
 ---
 
 ## 🧠 Refleksion
