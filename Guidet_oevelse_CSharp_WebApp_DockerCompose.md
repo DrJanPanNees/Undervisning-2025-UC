@@ -7,7 +7,7 @@
 **Varighed:** 1 undervisningsdag (ca. 4–6 timer inkl. pauser)  
 **Arbejdsform:** Guidet øvelse + refleksion i grupper  
 **Forudsætninger:** Grundlæggende C#, basal terminalbrug  
-**Teknologier:** .NET 7/8, ASP.NET Core Web App, Docker, Docker Compose  
+**Teknologier:** .NET ??, ASP.NET Core Web App, Docker, Docker Compose  
 **Værktøjer:** VS Code / Visual Studio, Terminal, Docker Desktop
 
 **Didaktisk fokus:**  
@@ -88,7 +88,7 @@ dotnet publish -c Release
 Undersøg mappen:
 
 ```text
-bin/Release/net8.0/publish/
+bin/Release/net8.0/publish/ #(husk at vælge den rigtige version)
 ```
 
 ---
@@ -98,7 +98,7 @@ bin/Release/net8.0/publish/
 Opret en fil `Dockerfile` i projektmappen (`HelloWorld/HelloWorld`).
 
 ```Dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 #(vælge den rigtige version)
 WORKDIR /app
 EXPOSE 8080
 COPY bin/Release/net8.0/publish .
