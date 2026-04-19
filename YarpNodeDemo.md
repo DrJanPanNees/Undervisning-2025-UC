@@ -1,7 +1,9 @@
 # Øvelse: YARP med to Node.js services (Products + Weather)
 
 ## 🎯 Formål
-Formålet med denne øvelse er at lære, hvordan en **C# YARP reverse proxy** kan bruges til at route trafik til flere backend-services.  
+Formålet med denne øvelse er at lære, hvordan en **C# YARP reverse proxy** kan bruges til at route trafik til flere backend-services.
+Der er en udfording i guiden, prøv at se om du kan løse den, se evt i øvelse 1.
+
 Vi bygger to simple Node.js services:  
 
 - **Products Service** (returnerer en liste af produkter)  
