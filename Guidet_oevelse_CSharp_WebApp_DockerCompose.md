@@ -82,6 +82,7 @@ At sikre at alle har **samme, synlige funktionalitet**, før containerisering.
 ## Del 2 – Build til deployment
 
 ```bash
+ctrl + c
 dotnet publish -c Release
 ```
 
