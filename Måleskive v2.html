@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Målskive – 2. semester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9eff5 0%, #dce3ec 100%);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .card {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #2d3a4b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .sub-title-wrapper {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sub {
+            color: #475569;
+            border-bottom: 1px solid #cbd5e1;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+
+        .target-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 500px;
+            max-width: 100%;
+        }
+
+        canvas {
+            background: #fef9e8;
+            border-radius: 50%;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.5);
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Den nye avancerede tooltip */
+        #tooltip {
+            position: absolute;
+            background: white;
+            color: #1e293b;
+            padding: 1rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(5px);
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            min-width: 250px;
+        }
+        #tooltip.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #tooltip h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+        }
+        .tooltip-list {
+            list-style: none;
+        }
+        .tooltip-list li {
+            padding: 0.2rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            white-space: normal;
+        }
+        .tooltip-cat {
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            margin-bottom: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tp-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-panel {
+            flex: 1;
+            min-width: 260px;
+            background: white;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .legend-panel h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .ring-legend {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 2rem;
+        }
+
+        .color-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        .need-color { background: #dc2626; box-shadow: 0 0 0 2px white, 0 0 0 4px #dc2626; }
+        .good-color { background: #f97316; }
+        .know-color { background: #16a34a; }
+
+        .tooltip-note {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+        }
+
+        @media (max-width: 850px) {
+            .canvas-wrapper { width: 300px; }
+            .card { padding: 1rem; }
+            #tooltip { min-width: 200px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🎯 2. SEMESTER – KVALITET, VEDLIGEHOLDELSE & PARALLELISME</h1>
+    <div class="sub-title-wrapper"><span class="sub">Målskive: Hold musen over et fag for at se emnerne</span></div>
+
+    <div class="target-container">
+        <div class="canvas-wrapper">
+            <canvas id="targetCanvas" width="500" height="500"></canvas>
+            <div id="tooltip"></div>
+        </div>
+
+        <div class="legend-panel">
+            <h3>📋 Ringenes betydning</h3>
+            <div class="ring-legend">
+                <div class="color-dot need-color"></div>
+                <div><strong>Need2Know (kerne)</strong><br>Eksamensrelevant</div>
+            </div>
+            <div class="ring-legend">
+                <div class="color-dot good-color"></div>
+                <div><strong>Godt at vide</strong><br>Vigtig forståelse</div>
+            </div>
+            <div class="ring-legend">
+                <div class="color-dot know-color"></div>
+                <div><strong>Kendskab</strong><br>Baggrundsviden</div>
+            </div>
+            <div class="tooltip-note">
+                Boblernes størrelse angiver, hvor mange emner faget har. De farvede prikker i boblen viser fordelingen mellem Need2Know, Godt at vide og Kendskab.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const emner = [
+        { navn: "Clean Architecture (Domain, Use Cases)", fag: "Programmering", ring: "need" },
+        { navn: "DDD – Entities, Value Objects...", fag: "Programmering", ring: "need" },
+        { navn: "CQRS (Commands vs. Queries)", fag: "Programmering", ring: "need" },
+        { navn: "Repository pattern & Facade/DTO", fag: "Programmering", ring: "need" },
+        { navn: "EF Core (change tracking, migrations)", fag: "Programmering", ring: "need" },
+        { navn: "async/await & Task.WhenAll", fag: "Programmering", ring: "need" },
+        { navn: "Parallel.ForEach / Task.Run", fag: "Programmering", ring: "good" },
+        { navn: "Unit test (Moq + uden mocks)", fag: "Programmering", ring: "need" },
+        { navn: "Exceptions & debugging", fag: "Programmering", ring: "good" },
+        { navn: "Logging", fag: "Programmering", ring: "know" },
+        
+        { navn: "Arkitektur-dokumentation & argumentation", fag: "Systemudvikling", ring: "need" },
+        { navn: "UML class diagram (lagdelt)", fag: "Systemudvikling", ring: "need" },
+        { navn: "UML sequence diagram (flow gennem lag)", fag: "Systemudvikling", ring: "need" },
+        { navn: "Error handling & logging (systemniveau)", fag: "Systemudvikling", ring: "need" },
+        { navn: "Traceability (krav → design → kode)", fag: "Systemudvikling", ring: "need" },
+        { navn: "Scrum (sprints, backlog, retro)", fag: "Systemudvikling", ring: "need" },
+        
+        { navn: "Database design & EF Core integration", fag: "Teknologi", ring: "need" },
+        { navn: "Concurrency & deadlocks", fag: "Teknologi", ring: "need" },
+        { navn: "Processer vs. tråde (I/O vs CPU)", fag: "Teknologi", ring: "need" },
+        
+        { navn: "IT Governance & bæredygtig IT", fag: "IT & Forretning", ring: "need" },
+        { navn: "Risk analysis", fag: "IT & Forretning", ring: "need" },
+        { navn: "Team/leder/konflikt", fag: "IT & Forretning", ring: "good" },
+        { navn: "Organisationsforandring med IT", fag: "IT & Forretning", ring: "need" },
+        { navn: "Statusrapportering til stakeholders", fag: "IT & Forretning", ring: "need" },
+        { navn: "Bæredygtig IT (uddybning)", fag: "IT & Forretning", ring: "know" }
+    ];
+
+    const canvas = document.getElementById('targetCanvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const w = canvas.width, h = canvas.height;
+    const centerX = w/2, centerY = h/2;
+    const radii = { need: 90, good: 170, know: 240 };
+    
+    const colors = {
+        need: '#dc2626',
+        good: '#f97316',
+        know: '#16a34a'
+    };
+
+    // --- FORBERED DATA TIL BOBBLER ---
+    // Gruppér emner pr. fag, og tæl where mange der er i hver ring
+    const fagGrupper = {};
+    emner.forEach(e => {
+        if (!fagGrupper[e.fag]) fagGrupper[e.fag] = { navn: e.fag, emner: { need: [], good: [], know: [] } };
+        fagGrupper[e.fag].emner[e.ring].push(e.navn);
+    });
+
+    // Lav boble-objekter med position og størrelse
+    const bobler = Object.values(fagGrupper).map((grp, i) => {
+        const total = grp.emner.need.length + grp.emner.good.length + grp.emner.know.length;
+        // Størrelse baseret på antal emner
+        const baseRadius = Math.max(30, Math.sqrt(total) * 22); 
+        
+        // Placer dem i en bue, afhængig af antal fag
+        const totalFag = Object.keys(fagGrupper).length;
+        const angle = (i / totalFag) * Math.PI * 2 - Math.PI / 2; // Start øverst
+        const dist = 110; // Afstand fra centrum
+        
+        return {
+            x: centerX + Math.cos(angle) * dist,
+            y: centerY + Math.sin(angle) * dist,
+            baseRadius: baseRadius,
+            currentRadius: baseRadius,
+            targetRadius: baseRadius,
+            data: grp
+        };
+    });
+
+    let hoveredBoble = null;
+
+    // --- TEGNE-FUNKTIONER ---
+    function drawTarget() {
+        ctx.clearRect(0, 0, w, h);
+        
+        // Yderste ring
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radii.know, 0, 2 * Math.PI);
+        ctx.fillStyle = colors.know;
+        ctx.fill();
+        
+        // Mellemring
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radii.good, 0, 2 * Math.PI);
+        ctx.fillStyle = colors.good;
+        ctx.fill();
+        
+        // Inderring
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radii.need, 0, 2 * Math.PI);
+        ctx.fillStyle = colors.need;
+        ctx.fill();
+        
+        // Hvide streger
+        ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+        ctx.lineWidth = 3;
+        [radii.need, radii.good].forEach(r => {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, r, 0, 2 * Math.PI);
+            ctx.stroke();
+        });
+
+        // Tekst i midten
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle'; 
+        ctx.font = "bold 20px 'Segoe UI'";
+        ctx.fillStyle = 'white';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 4;
+        ctx.fillText("2. SEM", centerX, centerY);
+        ctx.shadowBlur = 0;
+    }
+
+    function drawBobler() {
+        bobler.forEach(b => {
+            // Blød animation af størrelse (Lerp)
+            b.currentRadius += (b.targetRadius - b.currentRadius) * 0.15;
+
+            // Tegn skygge
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 5;
+
+            // Tegn selve boblen (Glassmorphism look)
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.currentRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = hoveredBoble === b ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)';
+            ctx.fill();
+            ctx.strokeStyle = hoveredBoble === b ? '#cbd5e1' : 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Tegn mini-prikker inde i boblen for at vise fordeling
+            const total = b.data.emner.need.length + b.data.emner.good.length + b.data.emner.know.length;
+            let dotX = b.x - (total * 4); // Centrér prikkerne
+            const dotY = b.y + 8;
+            
+            b.data.emner.need.forEach(() => {
+                ctx.beginPath(); ctx.arc(dotX, dotY, 3, 0, Math.PI*2); ctx.fillStyle = colors.need; ctx.fill();
+                dotX += 8;
+            });
+            b.data.emner.good.forEach(() => {
+                ctx.beginPath(); ctx.arc(dotX, dotY, 3, 0, Math.PI*2); ctx.fillStyle = colors.good; ctx.fill();
+                dotX += 8;
+            });
+            b.data.emner.know.forEach(() => {
+                ctx.beginPath(); ctx.arc(dotX, dotY, 3, 0, Math.PI*2); ctx.fillStyle = colors.know; ctx.fill();
+                dotX += 8;
+            });
+
+            // Tegn fagnavn
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#1e293b';
+            ctx.font = `bold ${hoveredBoble === b ? 13 : 12}px 'Segoe UI'`;
+            
+            // Hvis navnet er for langt, klip det af
+            let navn = b.data.navn;
+            if (navn.length > 12 && hoveredBoble !== b) navn = navn.substring(0, 10) + "...";
+            ctx.fillText(navn, b.x, b.y - 8);
+        });
+    }
+
+    // --- HOVER LOGIK ---
+    canvas.onmousemove = function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+        
+        let found = null;
+        // Tjek om musen er over en boble (baglæns for at få den øverste hvis de overlapper)
+        for (let i = bobler.length - 1; i >= 0; i--) {
+            const b = bobler[i];
+            const dx = b.x - mouseX;
+            const dy = b.y - mouseY;
+            if (Math.sqrt(dx*dx + dy*dy) < b.currentRadius) {
+                found = b;
+                break;
+            }
+        }
+        
+        if (found) {
+            hoveredBoble = found;
+            found.targetRadius = found.baseRadius * 1.2; // Udvid med 20%
+            canvas.style.cursor = 'pointer';
+            
+            // Byg HTML til tooltip
+            let html = `<h4>${found.data.navn}</h4><ul class="tooltip-list">`;
+            if(found.data.emner.need.length) {
+                html += `<div class="tooltip-cat" style="color:${colors.need}">Need2Know</div>`;
+                found.data.emner.need.forEach(e => html += `<li><span class="tp-dot" style="background:${colors.need}"></span>${e}</li>`);
+            }
+            if(found.data.emner.good.length) {
+                html += `<div class="tooltip-cat" style="color:${colors.good}">Godt at vide</div>`;
+                found.data.emner.good.forEach(e => html += `<li><span class="tp-dot" style="background:${colors.good}"></span>${e}</li>`);
+            }
+            if(found.data.emner.know.length) {
+                html += `<div class="tooltip-cat" style="color:${colors.know}">Kendskab</div>`;
+                found.data.emner.know.forEach(e => html += `<li><span class="tp-dot" style="background:${colors.know}"></span>${e}</li>`);
+            }
+            html += `</ul>`;
+            
+            tooltip.innerHTML = html;
+            tooltip.classList.add('active');
+            
+            // Positioner tooltip
+            let tx = (e.clientX - rect.left) + 20;
+            let ty = (e.clientY - rect.top) - 20;
+            
+            // Undgå at den ryger uden for skærmen til højre
+            if (tx + 250 > rect.width) tx = (e.clientX - rect.left) - 270;
+            
+            tooltip.style.left = tx + 'px';
+            tooltip.style.top = ty + 'px';
+
+        } else {
+            hoveredBoble = null;
+            bobler.forEach(b => b.targetRadius = b.baseRadius); // Sæt alle tilbage til normal
+            canvas.style.cursor = 'default';
+            tooltip.classList.remove('active');
+        }
+    };
+
+    canvas.onmouseleave = function() {
+        hoveredBoble = null;
+        bobler.forEach(b => b.targetRadius = b.baseRadius);
+        tooltip.classList.remove('active');
+    };
+
+    // --- ANIMATION LOOP ---
+    // Vi bruger requestAnimationFrame for at få bløde animationer på boblerne
+    function animate() {
+        drawTarget();
+        drawBobler();
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+</body>
+</html>
