@@ -178,3 +178,121 @@ Succes kriterium er, at gruppen mundtligt kan forklare:
 - multi-stage Dockerfile
 - docker compose med flere services
 - dev vs prod images
+## Del 7 – Multi-stage build
+
+Indtil nu har vi kørt `dotnet publish` manuelt, før vi byggede imaget. Det er skrøbeligt: hvis nogen glemmer trinnet, eller publisher til en forkert mappe, fejler build'et. En **multi-stage build** løser det ved at lade Docker selv stå for både build og runtime, i to adskilte "stages" i samme Dockerfile.
+
+Erstat indholdet af `Dockerfile` med:
+
+```Dockerfile
+# Stage 1: build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet publish -c Release -o /app/publish
+
+# Stage 2: runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+EXPOSE 8080
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "HelloWorld.dll"]
+```
+
+Kør igen:
+
+```bash
+docker compose up --build
+```
+
+### Observation
+Du behøver ikke længere køre `dotnet publish` manuelt – det sker inde i build-processen.
+
+**Pædagogisk intention:**  
+At vise at build-miljøet (SDK) og runtime-miljøet (ASP.NET runtime) kan være to forskellige images, og at det endelige image kun indeholder det færdigbyggede resultat – ikke kildekode eller SDK-værktøjer. Det gør imaget mindre og build'et reproducerbart uafhængigt af hvad der ligger lokalt på udviklingsmaskinen.
+
+**Refleksionsspørgsmål:**  
+- Hvorfor er det et problem, hvis SDK'en (byggeværktøjerne) er med i det image, der kører i produktion?
+- Hvad sker der, hvis du sletter din lokale `bin/`-mappe og kører `docker compose up --build` igen?
+
+---
+
+## Del 8 – Flere services i docker-compose
+
+En applikation kører sjældent alene. Vi tilføjer nu en database som en selvstændig service, og lader web-applikationen afhænge af den.
+
+Udvid `docker-compose.yml`:
+
+```yaml
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD=example
+    ports:
+      - "5432:5432"
+```
+
+Kør:
+
+```bash
+docker compose up --build
+```
+
+### Observation
+Der startes nu to containere. `web` kan ikke tilgå databasen via `localhost` – i stedet skal servicenavnet `db` bruges som hostname (fx `Host=db;Password=example`), fordi containerne kører på et fælles, internt Docker-netværk oprettet automatisk af compose.
+
+**Pædagogisk intention:**  
+At vise hvordan containere finder hinanden via servicenavne i stedet for IP-adresser eller `localhost`, og at introducere `depends_on` – samt dens begrænsning: det garanterer kun *startrækkefølge*, ikke at databasen faktisk er klar til at modtage forbindelser.
+
+**Refleksionsspørgsmål:**  
+- Hvorfor virker `localhost:5432` ikke fra web-containeren, selvom porten er mappet?
+- Hvad er forskellen på at en container er "startet" og at den er "klar"?
+
+---
+
+## Del 9 – Dev vs. prod
+
+Til sidst ser vi på, hvordan man kan holde en udviklingsopsætning (med hurtig feedback) adskilt fra en produktionsopsætning (med immutable builds, som i Del 6).
+
+Opret en ny fil `docker-compose.override.yml` ved siden af den eksisterende:
+
+```yaml
+services:
+  web:
+    build:
+      context: .
+      target: build
+    volumes:
+      - .:/src
+    command: ["dotnet", "watch", "run", "--urls=http://+:8080"]
+```
+
+`docker compose` bruger automatisk `docker-compose.yml` sammen med `docker-compose.override.yml`, når filen findes i samme mappe. Kør:
+
+```bash
+docker compose up --build
+```
+
+Ret nu i `Program.cs` igen, gem, og refresh browseren – uden at køre `dotnet publish` eller `docker compose up --build` igen.
+
+### Observation
+Ændringen slår igennem med det samme, fordi kildekoden er mountet direkte ind i containeren (`volumes`), og `dotnet watch` genstarter appen automatisk. Dette er stik modsat opførslen i Del 6.
+
+**Pædagogisk intention:**  
+At gøre eksplicit, at "dev-oplevelsen" (hurtig feedback, live reload) og "prod-oplevelsen" (immutable, reproducerbare builds) er to bevidste, forskellige konfigurationer – ikke noget der bare "sker automatisk". Compose-filer kan lagdeles, så man ikke behøver duplikere hele opsætningen.
+
+**Refleksionsspørgsmål:**  
+- Hvilke af de to opsætninger (Del 6 vs. Del 9) ville du bruge på en produktionsserver, og hvorfor?
+- Hvad er risikoen ved at bruge dev-opsætningen (med volumes) i produktion?
+
+---
