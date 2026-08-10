@@ -204,6 +204,12 @@ Kør igen:
 ```bash
 docker compose up --build
 ```
+```bash
+prøv at stoppe programmet
+ændre koden
+kør: docker compose up --build
+```
+
 
 ### Observation
 Du behøver ikke længere køre `dotnet publish` manuelt – det sker inde i build-processen.
@@ -219,7 +225,7 @@ At vise at build-miljøet (SDK) og runtime-miljøet (ASP.NET runtime) kan være 
 
 ## Del 8 – Flere services i docker-compose
 
-En applikation kører sjældent alene. Vi tilføjer nu en database som en selvstændig service, og lader web-applikationen afhænge af den.
+En applikation kører sjældent alene. Vi tilføjer nu en database som en selvstændig service, og lader web-applikationen afhænge af den. For at gøre det *synligt* at containerne kan finde hinanden, tilføjer vi et lille endpoint, der forsøger at oprette forbindelse til databasen.
 
 Udvid `docker-compose.yml`:
 
@@ -242,27 +248,72 @@ services:
       - "5432:5432"
 ```
 
-Kør:
+Tilføj derefter to nye endpoints i `Program.cs` (kræver ingen ekstra NuGet-pakker – vi tester blot om der kan åbnes en TCP-forbindelse):
+
+```csharp
+app.MapGet("/db-check", async () =>
+{
+    try
+    {
+        using var client = new System.Net.Sockets.TcpClient();
+        var connectTask = client.ConnectAsync("db", 5432);
+        var completed = await Task.WhenAny(connectTask, Task.Delay(2000));
+        return completed == connectTask && client.Connected
+            ? "✅ Forbindelse til 'db:5432' lykkedes"
+            : "❌ Forbindelse til 'db:5432' fejlede (timeout)";
+    }
+    catch (Exception ex)
+    {
+        return $"❌ Fejl mod 'db': {ex.Message}";
+    }
+});
+
+app.MapGet("/db-check-localhost", async () =>
+{
+    try
+    {
+        using var client = new System.Net.Sockets.TcpClient();
+        var connectTask = client.ConnectAsync("localhost", 5432);
+        var completed = await Task.WhenAny(connectTask, Task.Delay(2000));
+        return completed == connectTask && client.Connected
+            ? "✅ Forbindelse til 'localhost:5432' lykkedes"
+            : "❌ Forbindelse til 'localhost:5432' fejlede (timeout)";
+    }
+    catch (Exception ex)
+    {
+        return $"❌ Fejl mod 'localhost': {ex.Message}";
+    }
+});
+```
+
+Byg og kør:
 
 ```bash
 docker compose up --build
 ```
 
-### Observation
-Der startes nu to containere. `web` kan ikke tilgå databasen via `localhost` – i stedet skal servicenavnet `db` bruges som hostname (fx `Host=db;Password=example`), fordi containerne kører på et fælles, internt Docker-netværk oprettet automatisk af compose.
+### Bevis 1 – Servicenavn virker
+Åbn `http://localhost:8080/db-check` i browseren.
+
+**Observation:** Du får `✅ Forbindelse til 'db:5432' lykkedes` – selvom `web` og `db` er to helt separate containere.
+
+### Bevis 2 – localhost virker ikke
+Åbn `http://localhost:8080/db-check-localhost`.
+
+**Observation:** Du får `❌ ... fejlede (timeout)`. Fra `web`-containerens perspektiv findes der ingen database på dens egen `localhost` – porten `5432:5432` i compose-filen gør kun databasen tilgængelig fra *din* maskine, ikke fra andre containere.
 
 **Pædagogisk intention:**  
-At vise hvordan containere finder hinanden via servicenavne i stedet for IP-adresser eller `localhost`, og at introducere `depends_on` – samt dens begrænsning: det garanterer kun *startrækkefølge*, ikke at databasen faktisk er klar til at modtage forbindelser.
+At gøre Docker-netværket håndgribeligt: containere finder hinanden via servicenavne (DNS oprettet automatisk af compose), ikke via `localhost` eller IP-adresser. Samtidig introduceres `depends_on` – og dens begrænsning: den garanterer kun *startrækkefølge*, ikke at databasen faktisk er klar til at modtage forbindelser (prøv evt. at genstarte kun `web` med `docker compose restart web` lige efter `up`, og diskutér om der er en race condition).
 
 **Refleksionsspørgsmål:**  
-- Hvorfor virker `localhost:5432` ikke fra web-containeren, selvom porten er mappet?
-- Hvad er forskellen på at en container er "startet" og at den er "klar"?
+- Hvorfor virker `db` som hostname, men ikke `localhost`?
+- Hvad ville der ske, hvis I omdøbte servicen fra `db` til noget andet i `docker-compose.yml` – hvad skulle så også ændres?
 
 ---
 
 ## Del 9 – Dev vs. prod
 
-Til sidst ser vi på, hvordan man kan holde en udviklingsopsætning (med hurtig feedback) adskilt fra en produktionsopsætning (med immutable builds, som i Del 6).
+Til sidst ser vi på, hvordan man kan holde en udviklingsopsætning (med hurtig feedback) adskilt fra en produktionsopsætning (med immutable builds, som i Del 6/7).
 
 Opret en ny fil `docker-compose.override.yml` ved siden af den eksisterende:
 
@@ -277,22 +328,35 @@ services:
     command: ["dotnet", "watch", "run", "--urls=http://+:8080"]
 ```
 
-`docker compose` bruger automatisk `docker-compose.yml` sammen med `docker-compose.override.yml`, når filen findes i samme mappe. Kør:
+`docker compose` bruger automatisk `docker-compose.yml` sammen med `docker-compose.override.yml`, når begge filer findes i samme mappe.
 
 ```bash
 docker compose up --build
 ```
 
-Ret nu i `Program.cs` igen, gem, og refresh browseren – uden at køre `dotnet publish` eller `docker compose up --build` igen.
+### Bevis 1 – Live reload
+Ret teksten i `Program.cs` (fx i `/`-endpointet), gem, og refresh browseren – **uden** at køre `dotnet publish` eller `docker compose up --build` igen.
 
-### Observation
-Ændringen slår igennem med det samme, fordi kildekoden er mountet direkte ind i containeren (`volumes`), og `dotnet watch` genstarter appen automatisk. Dette er stik modsat opførslen i Del 6.
+**Observation:** Ændringen slår igennem med det samme, fordi kildekoden er mountet direkte ind i containeren (`volumes`), og `dotnet watch` genstarter appen automatisk. Sammenlign med Del 6, hvor præcis samme handling *ikke* virkede.
+
+### Bevis 2 – Mål tidsforskellen
+Prøv at tage tid på en kodeændring i hhv. dev- og prod-opsætning:
+
+```bash
+# Dev (Del 9): kun refresh
+time curl http://localhost:8080
+
+# Prod (Del 6/7): fuld rebuild nødvendig efter kodeændring
+docker compose -f docker-compose.yml up --build   # ignorerer override-filen
+```
+
+**Observation:** I dev-opsætningen er ændringen synlig på under et sekund. I prod-opsætningen tager det markant længere, fordi hele imaget skal genbygges fra bunden.
 
 **Pædagogisk intention:**  
 At gøre eksplicit, at "dev-oplevelsen" (hurtig feedback, live reload) og "prod-oplevelsen" (immutable, reproducerbare builds) er to bevidste, forskellige konfigurationer – ikke noget der bare "sker automatisk". Compose-filer kan lagdeles, så man ikke behøver duplikere hele opsætningen.
 
 **Refleksionsspørgsmål:**  
-- Hvilke af de to opsætninger (Del 6 vs. Del 9) ville du bruge på en produktionsserver, og hvorfor?
-- Hvad er risikoen ved at bruge dev-opsætningen (med volumes) i produktion?
+- Hvilken af de to opsætninger ville du bruge på en produktionsserver, og hvorfor?
+- Hvad er risikoen ved at bruge dev-opsætningen (med volumes og live kildekode) i produktion?
 
 ---
