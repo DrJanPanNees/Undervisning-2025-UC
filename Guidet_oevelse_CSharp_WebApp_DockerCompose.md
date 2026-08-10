@@ -303,11 +303,63 @@ docker compose up --build
 **Observation:** Du får `❌ ... fejlede (timeout)`. Fra `web`-containerens perspektiv findes der ingen database på dens egen `localhost` – porten `5432:5432` i compose-filen gør kun databasen tilgængelig fra *din* maskine, ikke fra andre containere.
 
 **Pædagogisk intention:**  
-At gøre Docker-netværket håndgribeligt: containere finder hinanden via servicenavne (DNS oprettet automatisk af compose), ikke via `localhost` eller IP-adresser. Samtidig introduceres `depends_on` – og dens begrænsning: den garanterer kun *startrækkefølge*, ikke at databasen faktisk er klar til at modtage forbindelser (prøv evt. at genstarte kun `web` med `docker compose restart web` lige efter `up`, og diskutér om der er en race condition).
+At gøre Docker-netværket håndgribeligt: containere finder hinanden via servicenavne (DNS oprettet automatisk af compose), ikke via `localhost` eller IP-adresser.
+
+### Bevis 3 – Race condition og løsningen
+
+`depends_on` garanterer kun *startrækkefølge* – ikke at databasen faktisk er klar til at modtage forbindelser. Det kan I opleve direkte:
+
+```bash
+docker compose down
+docker compose up --build
+```
+
+Skift hurtigt til browseren og genindlæs `/db-check` i de første par sekunder efter opstart.
+
+**Observation:** Nogle gange fejler forbindelsen kortvarigt, fordi Postgres endnu ikke er klar, selvom `web`-containeren allerede er startet.
+
+**Løsningen** er et healthcheck på `db`, kombineret med at `web` venter på at `db` er `healthy` (ikke bare startet). Udvid `docker-compose.yml`:
+
+```yaml
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD=example
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+```
+
+Kør igen:
+
+```bash
+docker compose up --build
+```
+
+**Observation:** I terminaloutputtet kan I nu se, at `web`-containeren først starter, *efter* `db` er markeret som `healthy` – ikke bare "started". Åbn `/db-check` med det samme efter opstart, og forbindelsen lykkes hver gang.
+
+**Pædagogisk intention:**  
+At vise at "startet" og "klar til at modtage forbindelser" er to forskellige ting – en klassisk kilde til intermitterende fejl i orkestrerede systemer – og at give en konkret, virkende løsning på problemet, ikke kun en observation af det.
 
 **Refleksionsspørgsmål:**  
 - Hvorfor virker `db` som hostname, men ikke `localhost`?
-- Hvad ville der ske, hvis I omdøbte servicen fra `db` til noget andet i `docker-compose.yml` – hvad skulle så også ændres?
+- Hvorfor er `depends_on` alene ikke nok, selv når det ser ud til at virke i de fleste tilfælde?
+
 
 ---
 
