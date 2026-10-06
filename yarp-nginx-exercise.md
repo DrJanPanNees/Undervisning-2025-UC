@@ -12,6 +12,13 @@ Formålet er at forstå hvordan en proxy kan fordele trafik til flere bagvedligg
 - Rute trafik fra én indgang (port 4000) videre til to forskellige Nginx-websites.  
 
 ---
+## Opstart af projektet:
+```
+mkdir YarpProxy && cd YarpProxy
+dotnet new web
+dotnet add package Yarp.ReverseProxy
+```
+---
 
 ## 📂 Projektstruktur
 
