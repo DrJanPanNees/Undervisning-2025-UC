@@ -195,10 +195,20 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
-// /site1 og /site2 uden afsluttende "/" matcher ikke routerne,
-// så vi sender dem videre til versionen med "/"
-app.MapGet("/site1", () => Results.Redirect("/site1/"));
-app.MapGet("/site2", () => Results.Redirect("/site2/"));
+// /site1 og /site2 uden afsluttende "/" matcher ikke YARP-routerne,
+// så vi sender dem videre til versionen med "/".
+// Det er vigtigt at sammenligne den præcise sti (MapGet("/site1") ville
+// også ramme "/site1/" og skabe et redirect-loop).
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    if (path == "/site1" || path == "/site2")
+    {
+        context.Response.Redirect(path + "/");
+        return;
+    }
+    await next();
+});
 
 app.MapReverseProxy();
 
@@ -262,6 +272,7 @@ http://localhost:4000   (YARP)
 | Problem | Mulig årsag og løsning |
 |---|---|
 | `404` på `http://localhost:4000/` | Forventet. Der er kun routes for `/site1` og `/site2`. |
+| `ERR_TOO_MANY_REDIRECTS` | Redirect-koden i `Program.cs` rammer også stien med `/`. Brug middleware-versionen ovenfor, der sammenligner den præcise sti. |
 | `404` på `/site1/index.html` | Tjek at `html1/index.html` findes, og at `PathRemovePrefix` er sat. |
 | `502 Bad Gateway` | Nginx-containerne kører ikke. Kør `docker compose ps` og `docker compose up -d`. |
 | `port is already allocated` | Port 5001/5002 er optaget. Skift porten i både `docker-compose.yml` og `appsettings.json`. |
