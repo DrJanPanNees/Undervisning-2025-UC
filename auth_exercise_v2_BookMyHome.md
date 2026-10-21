@@ -342,7 +342,7 @@ app.Run();
 
 - Bygge en **Authentication microservice** i C#.  
 - Opsætte **MySQL i Docker** og forstå forskelle fra MS SQL.  
-- Bruge **Minimal API** som REST.  
+- Bruge **Controller til at samle alle API i endpoints** som REST.  
 - Styre indgangen til systemet via **YARP Gateway**.  
 - Integrere en **Blazor GUI** med en backend-service.  
 - Forstå hvordan **Docker netværk** gør services tilgængelige via navne.  
